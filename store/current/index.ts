@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CurrentStore } from "../types/current";
 
-const useCurrentStore = create<CurrentStore>()(
+export const useCurrentStore = create<CurrentStore>()(
   persist(
     (set) => ({
       wallet: { accounts: [], active: { address: "", name: "" } },
