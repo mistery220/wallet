@@ -1,3 +1,3 @@
-export enum NetworkType {
+export enum Networks {
   EVM = "EVM",
 }
