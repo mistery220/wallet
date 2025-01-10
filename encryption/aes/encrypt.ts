@@ -1,22 +1,12 @@
-import Aes from "react-native-aes-crypto";
+import CryptoES from "crypto-es";
 
 /**
  * Encrypt data using AES
  * @param data - The plaintext to encrypt
- * @param key - The encryption key (256-bit)
- * @param iv - The initialization vector (128-bit)
- * @returns The encrypted string (base64)
+ * @param secretKey - The secret key used for encryption
+ * @returns The encrypted data (Base64)
  */
-export const encryptData = async (
-  data: string,
-  key: string,
-  iv: string
-): Promise<string> => {
-  try {
-    const encrypted = await Aes.encrypt(data, key, iv, "aes-256-cbc");
-    return encrypted;
-  } catch (error) {
-    console.error("Error encrypting data:", error);
-    throw error;
-  }
+export const encryptData = (data: string, secretKey: string): string => {
+  const encrypted = CryptoES.AES.encrypt(data, secretKey).toString();
+  return encrypted;
 };

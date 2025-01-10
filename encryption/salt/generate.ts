@@ -6,5 +6,6 @@ import { getRandomBytesAsync } from "expo-crypto";
  */
 export const generateSalt = async (): Promise<string> => {
   const randomBytes = await getRandomBytesAsync(16); // 128-bit salt
-  return Buffer.from(randomBytes).toString("hex");
+  const base64Salt = btoa(String.fromCharCode(...randomBytes));
+  return base64Salt;
 };

@@ -1,4 +1,4 @@
-import EncryptedStorage from "react-native-encrypted-storage";
+import { getItemAsync } from "expo-secure-store";
 
 /**
  * Retrieve encrypted data securely
@@ -7,7 +7,7 @@ import EncryptedStorage from "react-native-encrypted-storage";
  */
 export const getSecureData = async (key: string): Promise<string | null> => {
   try {
-    const value = await EncryptedStorage.getItem(key);
+    const value = await getItemAsync(key);
     return value ? value : null;
   } catch (error) {
     console.error(`Error retrieving ${key}:`, error);
