@@ -1,7 +1,7 @@
-import { NetworkType } from "./type";
+import { Networks } from "./type";
 
-export type Network = {
-  type: NetworkType;
+export type Chain = {
+  type: Networks;
   chainId: number;
   rpcs: string[];
 };
