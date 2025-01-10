@@ -1,5 +1,5 @@
 export type Account = {
   address: string;
   name: string;
-  id: string; // check if should be readonly
+  id: string; //@TODO check if should be readonly
 };

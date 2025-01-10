@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { NetworkStore } from "../types/network";
+import { NetworkStore } from "../../types/store/network";
 
 export const useNetworkStore = create<NetworkStore>()((set) => ({
   count: 1,

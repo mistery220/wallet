@@ -1,7 +1,7 @@
 import { Networks } from "@/types/network/type";
 import EvmWalletClient from "../evm/EvmWalletClient";
 
-class WalletClient {
+export default class WalletClient {
   private static instance: WalletClient;
   private evmWalletClient: EvmWalletClient;
 

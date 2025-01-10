@@ -4,6 +4,6 @@ type WalletStoreState = {
   wallets: Wallet[];
 };
 
-type WalletStoreActions = {};
+type WalletStoreActions = { addNewWallet: (wallet: Wallet) => void };
 
 export type WalletStore = WalletStoreState & WalletStoreActions;

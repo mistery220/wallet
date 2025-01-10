@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useWalletStore } from "@/store/wallets";
 import React from "react";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -23,33 +22,22 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  const { wallets } = useWalletStore();
-
   useEffect(() => {
+    // Hide splash screen once assets are loaded
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        {wallets.length > 0 ? (
-          <>
-            <Stack.Screen name="home" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerTitle: "Profile" }} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="onboard" options={{ headerShown: false }} />
-          </>
-        )}
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboard" options={{ headerShown: false }} />
         <Stack.Screen name="profile" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="actions" options={{ headerShown: false }} />
+        <Stack.Screen name="transaction" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
