@@ -1,7 +1,19 @@
 import { Networks } from "./type";
 
-export type Chain = {
-  type: Networks;
+export type ChainData = {
+  displayName: string;
+  name: string;
   chainId: number;
-  rpcs: string[];
+  type: Networks;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  logo: string;
+  mainnet: boolean;
+  rpcUrls: {
+    default: {
+      http: string[];
+    };
+  };
+  multicallAddress?: string;
+  blockExplorerUrl: string;
+  wNativeToken?: string;
 };

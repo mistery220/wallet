@@ -9,8 +9,6 @@ const Profile = () => {
     <View style={styles.container}>
       <Text style={styles.accountName}>{active.name}</Text>
       <Text style={styles.balance}>$0.00</Text>
-
-      {/* Action Buttons */}
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.button}
