@@ -5,13 +5,10 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const Profile = () => {
   const { active } = useCurrentStore(); // Assuming `active` holds the current account details
-
   return (
     <View style={styles.container}>
       <Text style={styles.accountName}>{active.name}</Text>
-      <Text style={styles.balance}>
-        Balance: {"0.00"} {"SOL"}
-      </Text>
+      <Text style={styles.balance}>$0.00</Text>
 
       {/* Action Buttons */}
       <View style={styles.actions}>

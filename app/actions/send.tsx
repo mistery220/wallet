@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Alert, Button, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function SendScreen() {
-  const [recipient, setRecipient] = useState("");
+  const [recipient, setRecipient] = useState("0x62414d44AaE1aA532630eDa14Df7F449C475759C");
   const [hash, setHash] = useState("");
   const [chainId, setChainId] = useState("");
   const router = useRouter();
