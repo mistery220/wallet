@@ -1,18 +1,15 @@
 import { ChainData } from "@/types/network";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import ChainCard from "./chains/ChainCard";
 
 const NetworkSection = ({
-  title,
   chains,
   selectChain,
 }: {
-  title: string;
   chains: ChainData[];
   selectChain: (chain: ChainData) => void;
 }) => (
   <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{title}</Text>
     {chains.map((chain) => (
       <ChainCard
         selectChain={() => {

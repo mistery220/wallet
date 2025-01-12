@@ -1,5 +1,6 @@
 import NetworkSection from "@/components/networks";
-import AddNetworkButton from "@/components/networks/add/button/AddNetwork";
+import AddNetworkButton from "@/components/networks/add/button/AddNetworkButton";
+import NewNetworkModal from "@/components/networks/add/modal/NewNetworkModal";
 import EditNetworkModal from "@/components/networks/edit/EditNetwork";
 import NetworkOptionsModal from "@/components/networks/options";
 import { useChainsStore } from "@/store/chains";
@@ -12,10 +13,8 @@ export const ChainsNetworksView = () => {
   const [selectedChain, setSelectedChain] = useState<ChainData | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-
-  // Separate mainnet and testnet chains
-  const mainnetChains = Object.values(chains).filter((chain) => chain.mainnet);
-  const testnetChains = Object.values(chains).filter((chain) => !chain.mainnet);
+  const [showAddNetworkModal, setShowAddNetworkModal] =
+    useState<boolean>(false);
 
   const selectChain = (chain: ChainData) => {
     setSelectedChain(chain);
@@ -31,16 +30,14 @@ export const ChainsNetworksView = () => {
       <ScrollView style={styles.container}>
         <NetworkSection
           selectChain={selectChain}
-          title="Mainnet"
-          chains={mainnetChains}
-        />
-        <NetworkSection
-          selectChain={selectChain}
-          title="Testnet"
-          chains={testnetChains}
+          chains={Object.values(chains)}
         />
       </ScrollView>
-      <AddNetworkButton onPress={() => {}} />
+      <AddNetworkButton
+        onPress={() => {
+          setShowAddNetworkModal(true);
+        }}
+      />
       {selectedChain && (
         <NetworkOptionsModal
           selectedChain={selectedChain}
@@ -55,6 +52,12 @@ export const ChainsNetworksView = () => {
           closeOptionsModal={() => setShowOptions(false)}
           selectedChain={selectedChain}
           showEditModal={showEditModal}
+        />
+      )}
+      {showAddNetworkModal && (
+        <NewNetworkModal
+          visible={showAddNetworkModal}
+          onClose={() => setShowAddNetworkModal(false)}
         />
       )}
     </View>

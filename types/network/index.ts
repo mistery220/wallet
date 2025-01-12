@@ -1,3 +1,4 @@
+import { NetworkCategory } from "@/enums/network/chains";
 import { Networks } from "@/enums/network/ecosystem";
 
 export type Chains = Record<number, ChainData>;
@@ -9,13 +10,7 @@ export type ChainData = {
   type: Networks;
   nativeCurrency: { name: string; symbol: string; decimals: number };
   logo: string;
-  mainnet: boolean;
-  rpcUrls: {
-    default: {
-      http: string[];
-    };
-  };
-  multicallAddress?: string;
+  category: NetworkCategory;
+  rpcUrls: string[];
   blockExplorerUrl: string;
-  wNativeToken?: string;
 };

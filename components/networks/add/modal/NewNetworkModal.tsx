@@ -1,4 +1,7 @@
+import { NetworkCategory } from "@/enums/network/chains";
+import { Networks } from "@/enums/network/ecosystem";
 import { ChainData } from "@/types/network";
+import { JsonRpcProvider } from "ethers";
 import React, { useState } from "react";
 import {
   Modal,
@@ -13,24 +16,35 @@ import {
 type NewNetworkModalProps = {
   visible: boolean;
   onClose: () => void;
-  onAddNetwork: (data: ChainData) => void;
+};
+
+type ChainDataInput = {
+  name: string;
+  chainId: string;
+  type: Networks;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  logo: string;
+  category: NetworkCategory;
+  rpcUrls: string[];
+  blockExplorerUrl: string;
 };
 
 const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
   visible,
   onClose,
-  onAddNetwork,
 }) => {
-  const [networkDetails, setNetworkDetails] = useState({
-    displayName: "",
+  const [networkDetails, setNetworkDetails] = useState<ChainDataInput>({
     name: "",
     chainId: "",
-    type: "mainnet", // Default to "mainnet" or "testnet"
+    type: Networks.EVM,
     nativeCurrency: { name: "", symbol: "", decimals: 18 },
     logo: "",
-    rpcUrls: { default: { http: [""] } },
+    category: NetworkCategory.CUSTOM,
+    rpcUrls: [],
     blockExplorerUrl: "",
   });
+
+  const [isDataValid, setIsDataValid] = useState(false); // Track RPC validation status
 
   const handleInputChange = (
     field: string,
@@ -40,15 +54,40 @@ const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
       ...prev,
       [field]: value,
     }));
+
+    if (field === "rpcUrls") {
+      // Trigger RPC URL validation when the rpcUrls field is updated
+      const rpcUrl = (value as string[])[0];
+      validateRpcUrl(rpcUrl);
+    }
+  };
+
+  const validateRpcUrl = async (url: string) => {
+    try {
+      const provider = new JsonRpcProvider(url, undefined, {
+        staticNetwork: true,
+      });
+      const chainDetails = await provider.getNetwork();
+      const chainIdStr = chainDetails.chainId.toString();
+      if (chainIdStr === networkDetails.chainId) {
+        setIsDataValid(true);
+      } else {
+        networkDetails.chainId = chainIdStr;
+        setIsDataValid(true);
+      }
+    } catch (e) {
+      console.log({ e });
+      setIsDataValid(false);
+    }
   };
 
   const handleAdd = () => {
-    const formattedData: ChainData = {
+    const formattedData: Partial<ChainData> = {
       ...networkDetails,
       chainId: parseInt(networkDetails.chainId, 10),
-      mainnet: networkDetails.type === "mainnet",
     };
-    onAddNetwork(formattedData);
+    // @TODO addNetwork Implementation
+    // onAddNetwork(formattedData);
     onClose();
   };
 
@@ -58,13 +97,6 @@ const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Add New Network</Text>
           <ScrollView>
-            <TextInput
-              style={styles.input}
-              placeholder="Display Name"
-              placeholderTextColor="#888"
-              value={networkDetails.displayName}
-              onChangeText={(text) => handleInputChange("displayName", text)}
-            />
             <TextInput
               style={styles.input}
               placeholder="Name"
@@ -82,18 +114,6 @@ const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
             />
             <TextInput
               style={styles.input}
-              placeholder="Native Currency Name"
-              placeholderTextColor="#888"
-              value={networkDetails.nativeCurrency.name}
-              onChangeText={(text) =>
-                handleInputChange("nativeCurrency", {
-                  ...networkDetails.nativeCurrency,
-                  name: text,
-                })
-              }
-            />
-            <TextInput
-              style={styles.input}
               placeholder="Native Currency Symbol"
               placeholderTextColor="#888"
               value={networkDetails.nativeCurrency.symbol}
@@ -108,13 +128,12 @@ const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
               style={styles.input}
               placeholder="RPC URL"
               placeholderTextColor="#888"
-              value={networkDetails.rpcUrls.default.http[0]}
-              onChangeText={(text) =>
-                handleInputChange("rpcUrls", {
-                  default: { http: [text] },
-                })
-              }
+              value={networkDetails.rpcUrls[0]}
+              onChangeText={(text) => handleInputChange("rpcUrls", [text])}
             />
+            {!isDataValid && networkDetails.rpcUrls?.[0]?.length > 0 && (
+              <Text style={styles.errorText}>Invalid RPC URL</Text>
+            )}
             <TextInput
               style={styles.input}
               placeholder="Block Explorer URL"
@@ -129,7 +148,11 @@ const NewNetworkModal: React.FC<NewNetworkModalProps> = ({
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
+            <TouchableOpacity
+              style={[styles.addButton, !isDataValid && styles.disabledButton]}
+              onPress={handleAdd}
+              disabled={!isDataValid}
+            >
               <Text style={styles.buttonText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -165,6 +188,11 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginBottom: 8,
+  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -185,6 +213,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#aaa", // Gray out the button when disabled
   },
   buttonText: {
     color: "#fff",

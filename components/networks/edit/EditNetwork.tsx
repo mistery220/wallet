@@ -64,7 +64,7 @@ export default function EditNetworkModal({
     {
       label: "RPC URLs",
       key: "rpcUrls",
-      value: selectedChain.rpcUrls.default.http.join("\n"),
+      value: selectedChain.rpcUrls.join("\n"),
       multiline: true,
     },
     {

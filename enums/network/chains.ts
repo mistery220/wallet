@@ -17,3 +17,8 @@ export enum ChainIds {
   METIS = 1088,
   SEPOLIA = 11155111,
 }
+
+export enum NetworkCategory {
+  DEFAULT,
+  CUSTOM,
+}
