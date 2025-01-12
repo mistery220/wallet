@@ -1,5 +1,5 @@
 import { ChainData } from "@/types/network";
-import { Networks } from "@/types/network/type";
+import { Networks } from "@/enums/network/ecosystem";
 
 export const arbitrumConfig: ChainData = {
   displayName: "Arbitrum",

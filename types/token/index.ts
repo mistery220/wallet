@@ -1,4 +1,4 @@
-import { Networks } from "../network/type";
+import { Networks } from "@/enums/network/ecosystem";
 
 export type Token = {
   chainId: number;

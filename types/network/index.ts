@@ -1,4 +1,6 @@
-import { Networks } from "./type";
+import { Networks } from "@/enums/network/ecosystem";
+
+export type Chains = Record<number, ChainData>;
 
 export type ChainData = {
   displayName: string;

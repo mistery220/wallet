@@ -1,5 +1,6 @@
+import { Chains } from "../network";
 
-export type NetworkStore = {
-  count: number;
-  inc: () => void;
+export type ChainsStore = {
+  chains: Chains;
+  setChains: (chains: Chains) => void;
 };

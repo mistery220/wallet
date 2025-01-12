@@ -4,7 +4,7 @@ import { joinStrings } from "@/utils/string/join";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export const useUserTokens = create<UserTokensStore>()(
+export const useUserTokensStore = create<UserTokensStore>()(
   persist(
     (set) => ({
       isLoading: true,
@@ -20,7 +20,7 @@ export const useUserTokens = create<UserTokensStore>()(
         })),
     }),
     {
-      name: "user-tokens",
+      name: "user-tokens-storage",
     }
   )
 );

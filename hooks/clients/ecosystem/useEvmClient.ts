@@ -1,9 +1,9 @@
-import { useNetworkStore } from "@/store/networks/networks";
+import { useChainsStore } from "@/store/chains";
 import { viemChainsById } from "@/utils/client/evm/chains";
 import { createPublicClient, fallback, http, PublicClient } from "viem";
 
 export default function useEvmClient() {
-  const {} = useNetworkStore();
+  const {} = useChainsStore();
 
   // @TODO add in persist storage or make a const file
   const publicClients: Record<number, PublicClient> = {};

@@ -1,4 +1,4 @@
-import { Networks } from "@/types/network/type";
+import { Networks } from "@/enums/network/ecosystem";
 import EvmWalletClient from "../evm/EvmWalletClient";
 
 export default class WalletClient {
