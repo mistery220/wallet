@@ -7,7 +7,7 @@ export default function OnboardLayout() {
       <Stack.Screen name="new" options={{ headerTitle: "New Wallet" }} />
       <Stack.Screen
         name="existing"
-        options={{ headerTitle: "Existing Wallet" }}
+        options={{ headerTitle: "Import Wallet" }}
       />
     </Stack>
   );

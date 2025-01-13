@@ -7,14 +7,14 @@ import { router } from "expo-router";
 import React from "react";
 import {
   Image,
+  Platform,
+  SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView,
-  Platform,
-  StatusBar,
 } from "react-native";
 
 const ActionButton: React.FC<{
@@ -48,14 +48,25 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.networksButton}
-          onPress={() => router.push("/networks")}
-        >
-          <Text style={styles.networksText}>Networks</Text>
-          <MaterialIcons name="keyboard-arrow-right" size={24} color="#999" />
-        </TouchableOpacity>
+       <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.networkIndicator}
+            onPress={() => router.push("/networks")}
+          >
+            <View style={styles.networkDot} />
+            <Text style={styles.networkText}>Mainnet</Text>
+            <MaterialIcons name="keyboard-arrow-down" size={16} color="#999" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.walletsButton}
+            onPress={() => router.push("/wallets")}
+          >
+            <MaterialIcons name="account-balance-wallet" size={16} color="#999" />
+            <Text style={styles.walletsText}>Wallets</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView 
@@ -131,6 +142,40 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingVertical: 12,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#333',
+    padding: 12,
+    borderRadius: 12,
+  },
+  networkIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  networkDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50', // Green for mainnet
+  },
+  networkText: {
+    color: '#999',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  walletsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  walletsText: {
+    color: '#999',
+    fontSize: 14,
+    fontWeight: '600',
   },
   content: {
     flex: 1,

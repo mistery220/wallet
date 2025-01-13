@@ -40,6 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="transaction" options={{ headerShown: false }} />
         <Stack.Screen name="networks" options={{ headerShown: false }} />
         <Stack.Screen name="tokens" options={{ headerShown: false }} />
+        <Stack.Screen name="wallets" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
