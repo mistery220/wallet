@@ -45,7 +45,15 @@ export default function SendScreen() {
     router.push("/transaction");
   };
 
-  const SelectionButton = ({ title, value, onPress }) => (
+  const SelectionButton = ({
+    title,
+    value,
+    onPress,
+  }: {
+    title: string;
+    value: string;
+    onPress: () => void;
+  }) => (
     <Pressable
       style={[styles.selectionButton, !value && styles.emptySelection]}
       onPress={onPress}
