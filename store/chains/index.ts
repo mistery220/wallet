@@ -14,6 +14,10 @@ export const useChainsStore = create<ChainsStore>()(
         set((state) => {
           return { chains: { ...state.chains, [chain.chainId]: chain } };
         }),
+      updateChain: (chain: ChainData) =>
+        set((state) => {
+          return { chains: { ...state.chains, [chain.chainId]: chain } };
+        }),
     }),
     {
       name: "chains-state-storage",

@@ -6,7 +6,7 @@ import NetworkOptionsModal from "@/components/networks/options";
 import { useChainsStore } from "@/store/chains";
 import { ChainData } from "@/types/network";
 import React, { useState } from "react";
-import { ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StatusBar, StyleSheet, View } from "react-native";
 
 export const ChainsNetworksView = () => {
   const { chains } = useChainsStore();
@@ -24,9 +24,6 @@ export const ChainsNetworksView = () => {
   return (
     <View style={styles.wrapper}>
       <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Networks</Text>
-      </View>
       <ScrollView style={styles.container}>
         <NetworkSection
           selectChain={selectChain}
@@ -67,18 +64,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: "#000",
-  },
-  header: {
-    padding: 16,
-    paddingTop: 60,
-    backgroundColor: "#000",
-    borderBottomWidth: 1,
-    borderBottomColor: "#222",
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "white",
   },
   container: {
     flex: 1,

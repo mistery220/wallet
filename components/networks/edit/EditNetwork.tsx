@@ -1,5 +1,7 @@
+import { useChainsStore } from "@/store/chains";
 import { ChainData } from "@/types/network";
 import { MaterialIcons } from "@expo/vector-icons";
+import { JsonRpcProvider } from "ethers";
 import { useState } from "react";
 import {
   Modal,
@@ -29,27 +31,56 @@ export default function EditNetworkModal({
   closeModal: () => void;
   closeOptionsModal: () => void;
 }) {
-  if (!selectedChain) return null;
+  const { updateChain } = useChainsStore();
 
   const [editedValues, setEditedValues] = useState<Partial<ChainData>>({});
+  const [isDataValid, setIsDataValid] = useState<boolean>(true);
 
   const handleEditField = (field: string, value: string) => {
-    setEditedValues((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setIsDataValid(true);
+    setEditedValues((prev) => {
+      if (field === "rpcUrls") {
+        return {
+          ...prev,
+          [field]: [value],
+        };
+      }
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
 
-  const handleSaveChanges = () => {
-    if (!selectedChain) return;
+  const validateRpcUrl = async () => {
+    if (!editedValues.rpcUrls?.[0]) {
+      return false;
+    }
 
-    // Merge edited values with original chain data
-    const updatedChain = {
+    try {
+      const provider = new JsonRpcProvider(editedValues.rpcUrls[0], undefined, {
+        staticNetwork: true,
+      });
+      const chainDetails = await provider.getNetwork();
+      if (Number(chainDetails.chainId.toString()) === selectedChain.chainId) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.log("RPC validation error:", e);
+      return false;
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    const isValid = await validateRpcUrl();
+    setIsDataValid(isValid);
+    if (!isValid) return;
+    const updatedValues = {
       ...selectedChain,
       ...editedValues,
     };
-
-    // updateChain(selectedChain.chainId, updatedChain);
+    updateChain(updatedValues);
     closeModal();
     closeOptionsModal();
     setEditedValues({});
@@ -81,14 +112,14 @@ export default function EditNetworkModal({
       animationType="slide"
       onRequestClose={closeModal}
     >
-      <TouchableOpacity 
-        style={styles.modalOverlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
         onPress={closeModal}
       >
-        <TouchableOpacity 
-          activeOpacity={1} 
-          onPress={e => e.stopPropagation()}
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
         >
           <View style={styles.editContainer}>
             <View style={styles.optionsHeader}>
@@ -97,7 +128,7 @@ export default function EditNetworkModal({
                 <MaterialIcons name="close" size={24} color="white" />
               </TouchableOpacity>
             </View>
-  
+
             <ScrollView style={styles.editFields}>
               {editableFields.map((field) => (
                 <View key={field.key} style={styles.fieldContainer}>
@@ -119,7 +150,9 @@ export default function EditNetworkModal({
                 </View>
               ))}
             </ScrollView>
-  
+            {!isDataValid && (
+              <Text style={styles.errorText}>Invalid RPC URL</Text>
+            )}
             <View style={styles.actionButtons}>
               <TouchableOpacity
                 style={[styles.actionButton, styles.cancelButton]}
@@ -127,6 +160,7 @@ export default function EditNetworkModal({
               >
                 <Text style={styles.actionButtonText}>Cancel</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.actionButton, styles.saveButton]}
                 onPress={handleSaveChanges}
@@ -211,5 +245,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 12,
+    marginTop: 4,
   },
 });
