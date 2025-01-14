@@ -26,6 +26,8 @@ export default function ViewSeedPhrase() {
   const [copiedText, setCopiedText] = useState("");
   const [seedPhrase, setSeedPhrase] = useState<string>();
 
+  console.log({ walletId, password });
+
   const handleVerify = async () => {
     setIsVerifying(true);
     try {
@@ -111,7 +113,7 @@ export default function ViewSeedPhrase() {
             placeholderTextColor="#666"
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(val) => setPassword(val)}
           />
         </View>
 

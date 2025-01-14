@@ -1,7 +1,12 @@
+import EncryptedStore from "@/encryption/EncryptedStore";
+import { useCurrentStore } from "@/store/current";
+import { useWalletStore } from "@/store/wallets";
+import { Account } from "@/types/wallet/account";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as bip39 from "bip39";
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { useNavigationContainerRef } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Alert,
@@ -16,24 +21,36 @@ import {
   View,
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import { mnemonicToAccount } from "viem/accounts";
 import SelectMnemonicLength from "./SelectMnemonicLength";
 
 type PhraseLength = 12 | 15 | 24;
+const words = new Set(bip39.wordlists.english);
 
 const ExistingWallet: React.FC = () => {
+  const navigation = useNavigationContainerRef();
+
+  // hooks
+  const { addNewWallet } = useWalletStore();
+  const { setActiveAccount, setWallet } = useCurrentStore();
+
+  // states
   const [selectedLength, setSelectedLength] = useState<PhraseLength | null>(
     null
   );
   const [phrases, setPhrases] = useState<string[]>([]);
   const [showPhrases, setShowPhrases] = useState<boolean[]>([]);
-  const [invalidIndices, setInvalidIndices] = useState<number[]>([]);
+  const [invalidIndices, setInvalidIndices] = useState<Set<number>>(new Set());
   const inputRefs = useRef<TextInput[]>([]);
 
   const handleLengthSelect = (length: PhraseLength) => {
     setSelectedLength(length);
     setPhrases(new Array(length).fill(""));
     setShowPhrases(new Array(length).fill(false));
-    setInvalidIndices([]);
+    setInvalidIndices((prev) => {
+      prev.clear();
+      return prev;
+    });
   };
 
   const toggleShowPhrase = (index: number) => {
@@ -62,7 +79,7 @@ const ExistingWallet: React.FC = () => {
 
       setPhrases(words);
       setShowPhrases(new Array(selectedLength).fill(false));
-      setInvalidIndices([]);
+      setInvalidIndices(new Set());
     } catch (error) {
       Alert.alert("Error", "Failed to paste from clipboard");
     }
@@ -74,25 +91,39 @@ const ExistingWallet: React.FC = () => {
     setPhrases(newPhrases);
   };
 
-  const validateSeedPhrase = () => {
+  const validateSeedPhrase = async () => {
     const invalidWords = phrases.reduce((acc, phrase, index) => {
-      if (!phrase.match(/^[a-z]+$/)) {
-        acc.push(index);
+      if (!words.has(phrase)) {
+        acc.add(index);
       }
       return acc;
-    }, [] as number[]);
+    }, new Set() as Set<number>);
 
-    if (invalidWords.length > 0) {
+    if (invalidWords.size > 0) {
       setInvalidIndices(invalidWords);
-      inputRefs.current[invalidWords[0]]?.focus();
-      Alert.alert(
-        "Invalid Words",
-        "Please check the highlighted words and try again."
-      );
-      return;
+    } else {
+      const mnemonic = phrases.join(" ");
+      const account = mnemonicToAccount(mnemonic, {
+        accountIndex: 0,
+        addressIndex: 0,
+      });
+      const acc = {
+        address: account.address,
+        name: "Account 1",
+        id: account.address,
+      };
+      const accounts: Account[] = [acc];
+      const walletId = new Date().getTime().toString();
+      const newWallet = { accounts, id: walletId, isPhrase: true };
+      // @TODO add password from user
+      await EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
+      addNewWallet(newWallet);
+      setActiveAccount(acc);
+      setWallet(newWallet);
+      navigation.reset({
+        routes: [{ name: "(tabs)" }],
+      });
     }
-
-    router.push("/(tabs)");
   };
 
   if (!selectedLength) {
@@ -137,7 +168,7 @@ const ExistingWallet: React.FC = () => {
               entering={FadeInDown.delay(index * 50)}
               style={[
                 styles.phraseContainer,
-                invalidIndices.includes(index) && styles.invalidPhrase,
+                invalidIndices.has(index) && styles.invalidPhrase,
               ]}
             >
               <Text style={styles.phraseNumber}>{index + 1}</Text>
@@ -148,6 +179,11 @@ const ExistingWallet: React.FC = () => {
                 onChangeText={(text) => handlePhraseChange(text, index)}
                 secureTextEntry={!showPhrases[index]}
                 autoCapitalize="none"
+                onFocus={() => {
+                  if (invalidIndices.has(index)) {
+                    invalidIndices.delete(index);
+                  }
+                }}
                 autoCorrect={false}
                 placeholder={`Word ${index + 1}`}
                 placeholderTextColor="#666"

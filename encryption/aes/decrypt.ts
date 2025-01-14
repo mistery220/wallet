@@ -10,7 +10,12 @@ export const decryptData = (
   encryptedData: string,
   secretKey: string
 ): string => {
-  const bytes = CryptoES.AES.decrypt(encryptedData, secretKey);
-  const originalData = bytes.toString(CryptoES.enc.Utf8);
-  return originalData;
+  try {
+    const bytes = CryptoES.AES.decrypt(encryptedData, secretKey);
+    const originalData = bytes.toString(CryptoES.enc.Utf8);
+    return originalData;
+  } catch (error) {
+    console.error("Decryption error:", error);
+    throw error; // Re-throw if needed
+  }
 };

@@ -1,3 +1,4 @@
+import { joinStrings } from "@/utils/string/join";
 import { decryptData } from "./aes/decrypt";
 import { encryptData } from "./aes/encrypt";
 import { deriveKey } from "./key/deriveKey";
@@ -25,10 +26,11 @@ class EncryptedStorage {
     value: string,
     password: string
   ): Promise<void> {
-    let salt = await getSalt(storeName);
+    const saltKey = joinStrings(storeName, "salt");
+    let salt = await getSalt(saltKey);
     if (!salt) {
       salt = await generateSalt();
-      await saveSalt(storeName, salt);
+      await saveSalt(saltKey, salt);
     }
     const key = await deriveKey(password, salt);
     const encryptedKey = encryptData(value, key);
@@ -39,7 +41,8 @@ class EncryptedStorage {
     storeName: string,
     password: string
   ): Promise<string | null> {
-    const salt = await getSalt(storeName);
+    const saltKey = joinStrings(storeName, "salt");
+    const salt = await getSalt(saltKey);
     if (!salt) {
       throw new Error("Salt not found. Cannot decrypt private key.");
     }

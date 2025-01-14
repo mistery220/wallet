@@ -5,25 +5,25 @@ import { Account } from "@/types/wallet/account";
 import { AntDesign } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useNavigationContainerRef } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import "react-native-get-random-values";
 import { english, generateMnemonic, mnemonicToAccount } from "viem/accounts";
 
 const NewSeedPhraseScreen = () => {
   const navigation = useNavigationContainerRef();
-  const mnemonic = generateMnemonic(english);
   const { addNewWallet } = useWalletStore();
   const { setActiveAccount, setWallet } = useCurrentStore();
   const [copiedText, setCopiedText] = useState("");
+  // Generate mnemonic once and store it in state
+  const [mnemonic] = useState(() => generateMnemonic(english));
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     await Clipboard.setStringAsync(mnemonic);
     setCopiedText("Copied!");
     setTimeout(() => setCopiedText(""), 2000);
-  };
+  }, [mnemonic]);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     Alert.alert(
       "Important",
       "Have you safely stored your seed phrase? You won't be able to recover your wallet without it.",
@@ -47,7 +47,11 @@ const NewSeedPhraseScreen = () => {
             const accounts: Account[] = [acc];
             const newWallet = { accounts, id: "wallet1", isPhrase: true };
             // @TODO add password from user
-            EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
+            await EncryptedStore.encryptAndStore(
+              newWallet.id,
+              mnemonic,
+              "1234"
+            );
             addNewWallet(newWallet);
             setActiveAccount(acc);
             setWallet(newWallet);
@@ -58,7 +62,7 @@ const NewSeedPhraseScreen = () => {
         },
       ]
     );
-  };
+  }, [mnemonic, addNewWallet, setActiveAccount, setWallet, navigation]);
 
   return (
     <View style={styles.container}>
