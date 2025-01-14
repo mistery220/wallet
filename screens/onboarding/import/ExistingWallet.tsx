@@ -72,10 +72,6 @@ const ExistingWallet: React.FC = () => {
     const newPhrases = [...phrases];
     newPhrases[index] = text.toLowerCase().trim();
     setPhrases(newPhrases);
-
-    if (text && index < phrases.length - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
   };
 
   const validateSeedPhrase = () => {
@@ -96,21 +92,16 @@ const ExistingWallet: React.FC = () => {
       return;
     }
 
-    router.push("/profile");
+    router.push("/(tabs)");
   };
 
   if (!selectedLength) {
-    return (
-      <SelectMnemonicLength handleLengthSelect={handleLengthSelect} />
-    );
+    return <SelectMnemonicLength handleLengthSelect={handleLengthSelect} />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={["#1A1A1A", "#121212"]}
-        style={styles.gradient}
-      />
+      <LinearGradient colors={["#1A1A1A", "#121212"]} style={styles.gradient} />
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -126,7 +117,8 @@ const ExistingWallet: React.FC = () => {
         >
           <MaterialIcons
             name={showPhrases[0] ? "visibility-off" : "visibility"}
-            size={24} color="white"
+            size={24}
+            color="white"
           />
         </TouchableOpacity>
       </View>
@@ -166,7 +158,8 @@ const ExistingWallet: React.FC = () => {
               >
                 <MaterialIcons
                   name={showPhrases[index] ? "visibility-off" : "visibility"}
-                  size={20} color="#666"
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
             </Animated.View>

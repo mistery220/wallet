@@ -4,7 +4,7 @@ import React from "react";
 
 const MainPage = () => {
   const { wallets } = useWalletStore();
-  if (!wallets.length) {
+  if (wallets.length) {
     return <Redirect href="/(tabs)" />;
   } else {
     return <Redirect href="/onboard" />;

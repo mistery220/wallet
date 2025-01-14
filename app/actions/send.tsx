@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { isAddress } from "viem";
 
 export default function SendScreen() {
   const [recipient, setRecipient] = useState("");
@@ -21,8 +22,7 @@ export default function SendScreen() {
   const router = useRouter();
 
   const validateAddress = (address: string) => {
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    return ethAddressRegex.test(address);
+    return isAddress(address);
   };
 
   const handleSend = () => {

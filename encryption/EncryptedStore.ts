@@ -25,10 +25,10 @@ class EncryptedStorage {
     value: string,
     password: string
   ): Promise<void> {
-    let salt = await getSalt();
+    let salt = await getSalt(storeName);
     if (!salt) {
       salt = await generateSalt();
-      await saveSalt(salt);
+      await saveSalt(storeName, salt);
     }
     const key = await deriveKey(password, salt);
     const encryptedKey = encryptData(value, key);
@@ -39,7 +39,7 @@ class EncryptedStorage {
     storeName: string,
     password: string
   ): Promise<string | null> {
-    const salt = await getSalt();
+    const salt = await getSalt(storeName);
     if (!salt) {
       throw new Error("Salt not found. Cannot decrypt private key.");
     }
