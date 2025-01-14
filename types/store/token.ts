@@ -7,8 +7,8 @@ type TokensState = {
 
 type TokensActions = {
   setIsLoading: (val: boolean) => void;
-  setTokens: (chainId: number, tokens: TokenMap) => void;
-  updateToken: (token: Token) => void;
+  updateTokenList: (chainId: number, tokens: TokenMap) => void;
+  updateToken: (chainid: number, token: Token) => void;
 };
 
 export type TokensStore = TokensState & TokensActions;

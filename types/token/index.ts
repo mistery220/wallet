@@ -8,6 +8,8 @@ export type Token = {
   network: Networks;
   address: string;
   logo: string;
+  usd?: string;
+  bal: string;
 };
 
 export type TokenMap = Record<string, Token>;

@@ -8,20 +8,8 @@ export const useFormStore = create<FormStore>()(
     (set) => ({
       to: {},
       from: {},
-      setFromTokens: (tokens: TokenMap) =>
-        set((state) => ({
-          from: {
-            ...state.from,
-            ...tokens,
-          },
-        })),
-      setToTokens: (tokens: TokenMap) =>
-        set((state) => ({
-          to: {
-            ...state.to,
-            ...tokens,
-          },
-        })),
+      setFromTokens: (tokens: TokenMap) => set({ from: tokens }),
+      setToTokens: (tokens: TokenMap) => set({ to: tokens }),
     }),
     {
       name: "form-data-storage",

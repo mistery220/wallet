@@ -1,13 +1,14 @@
 import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
-import { UserToken } from "@/types/token/user";
+import { Token } from "@/types/token";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Image,
   Platform,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -30,25 +31,77 @@ const ActionButton: React.FC<{
   </TouchableOpacity>
 );
 
+const formatBalance = (bal: string, decimals: number = 18) => {
+  const value = parseFloat(bal) / Math.pow(10, decimals);
+  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
+};
+
 const Profile = () => {
   const { active } = useCurrentStore();
   const chains = useChainsStore((state) => state.chains);
   const userTokens = useUserTokensStore((state) => state.tokens);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const tokensByChain = Object.entries(userTokens).reduce(
-    (acc, [key, token]) => {
-      if (!acc[token.chainId]) {
-        acc[token.chainId] = [];
+  // Calculate total balance
+  const totalBalance = useMemo(() => {
+    let total = 0;
+    Object.values(userTokens).forEach((chainTokens) => {
+      Object.values(chainTokens).forEach((token) => {
+        if (token.usd) {
+          const balance = parseFloat(token.bal) / Math.pow(10, token.decimals);
+          total += balance * parseFloat(token.usd);
+        }
+      });
+    });
+    return total;
+  }, [userTokens]);
+
+  // Create sorted array of all tokens
+  const sortedTokens = useMemo(() => {
+    const allTokens: (Token & { dollarValue?: number })[] = [];
+    Object.entries(userTokens).forEach(([chainId, tokensMap]) => {
+      Object.values(tokensMap).forEach((token) => {
+        const balance = parseFloat(token.bal) / Math.pow(10, token.decimals);
+        const dollarValue = token.usd
+          ? balance * parseFloat(token.usd)
+          : undefined;
+        allTokens.push({
+          ...token,
+          dollarValue,
+          chainId: Number(chainId),
+        });
+      });
+    });
+
+    return allTokens.sort((a, b) => {
+      // If both tokens have dollar values, sort by value
+      if (a.dollarValue !== undefined && b.dollarValue !== undefined) {
+        return b.dollarValue - a.dollarValue;
       }
-      acc[token.chainId].push(token);
-      return acc;
-    },
-    {} as Record<number, UserToken[]>
-  );
+      // If only one token has a dollar value, prioritize it
+      if (a.dollarValue !== undefined) return -1;
+      if (b.dollarValue !== undefined) return 1;
+      // If neither has a dollar value, sort by balance
+      return (
+        parseFloat(b.bal) / Math.pow(10, b.decimals) -
+        parseFloat(a.bal) / Math.pow(10, a.decimals)
+      );
+    });
+  }, [userTokens]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // @TODO add refresh logic
+      // await refreshTokens();
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-       <View style={styles.header}>
+      <View style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity
             style={styles.networkIndicator}
@@ -63,19 +116,37 @@ const Profile = () => {
             style={styles.walletsButton}
             onPress={() => router.push("/wallets")}
           >
-            <MaterialIcons name="account-balance-wallet" size={16} color="#999" />
+            <MaterialIcons
+              name="account-balance-wallet"
+              size={16}
+              color="#999"
+            />
             <Text style={styles.walletsText}>Wallets</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#fff"
+            titleColor="#fff"
+            colors={["#fff"]}
+          />
+        }
       >
         <View style={styles.accountSection}>
           <Text style={styles.accountName}>{active.name}</Text>
-          <Text style={styles.balance}>$0.00</Text>
+          <Text style={styles.balance}>
+            $
+            {totalBalance.toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            })}
+          </Text>
           <Text style={styles.balanceSubtext}>Total Balance</Text>
         </View>
 
@@ -92,39 +163,49 @@ const Profile = () => {
 
         <View style={styles.assetsSection}>
           <Text style={styles.sectionTitle}>Assets</Text>
-          {Object.entries(tokensByChain).map(([chainId, tokens]) => {
-            const chain = chains[Number(chainId)];
+          {sortedTokens.map((token) => {
+            const chain = chains[token.chainId];
+            const balance = formatBalance(token.bal, token.decimals);
+
             return (
-              <View key={chainId} style={styles.chainSection}>
-                <View style={styles.chainHeader}>
-                  {chain?.logo && (
-                    <Image source={{ uri: chain.logo }} style={styles.chainLogo} />
-                  )}
-                  <Text style={styles.chainName}>{chain?.displayName}</Text>
-                </View>
-                {tokens.map((token) => (
-                  <TouchableOpacity
-                    key={`${token.chainId}-${token.address}`}
-                    style={styles.tokenItem}
-                    activeOpacity={0.7}
-                  >
-                    <Image
-                      source={{ uri: token.logo }}
-                      style={styles.tokenLogo}
-                    />
-                    <View style={styles.tokenInfo}>
-                      <View style={styles.tokenMainInfo}>
-                        <Text style={styles.tokenSymbol}>{token.symbol}</Text>
-                        <Text style={styles.tokenBalance}>{token.bal}</Text>
-                      </View>
-                      <View style={styles.tokenSubInfo}>
-                        <Text style={styles.tokenName}>{token.name}</Text>
-                        <Text style={styles.tokenValue}>$0.00</Text>
+              <TouchableOpacity
+                key={`${token.chainId}-${token.address}`}
+                style={styles.tokenItem}
+                activeOpacity={0.7}
+              >
+                <Image source={{ uri: token.logo }} style={styles.tokenLogo} />
+                <View style={styles.tokenInfo}>
+                  <View style={styles.tokenMainInfo}>
+                    <View style={styles.tokenTitleContainer}>
+                      <Text style={styles.tokenSymbol}>{token.symbol}</Text>
+                      <View style={styles.chainIndicator}>
+                        {chain?.logo && (
+                          <Image
+                            source={{ uri: chain.logo }}
+                            style={styles.chainIndicatorLogo}
+                          />
+                        )}
+                        <Text style={styles.chainIndicatorText}>
+                          {chain?.displayName}
+                        </Text>
                       </View>
                     </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                    <Text style={styles.tokenBalance}>{balance}</Text>
+                  </View>
+                  <View style={styles.tokenSubInfo}>
+                    <Text style={styles.tokenName}>{token.name}</Text>
+                    <Text style={styles.tokenValue}>
+                      {token.usd
+                        ? `$${(
+                            parseFloat(token.usd) * parseFloat(balance)
+                          ).toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          })}`
+                        : "—"}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -137,61 +218,48 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a1a",
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
   headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#333',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#333",
     padding: 12,
     borderRadius: 12,
   },
   networkIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   networkDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4CAF50', // Green for mainnet
+    backgroundColor: "#4CAF50",
   },
   networkText: {
-    color: '#999',
+    color: "#999",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   walletsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   walletsText: {
-    color: '#999',
+    color: "#999",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
-  },
-  networksButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#333",
-    padding: 16,
-    borderRadius: 12,
-  },
-  networksText: {
-    color: "#999",
-    fontSize: 16,
-    fontWeight: "600",
   },
   accountSection: {
     alignItems: "center",
@@ -246,25 +314,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 16,
   },
-  chainSection: {
-    marginBottom: 24,
-  },
-  chainHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  chainLogo: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 8,
-  },
-  chainName: {
-    color: "#999",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   tokenItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -285,8 +334,12 @@ const styles = StyleSheet.create({
   tokenMainInfo: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 4,
+  },
+  tokenTitleContainer: {
+    flex: 1,
+    marginRight: 8,
   },
   tokenSubInfo: {
     flexDirection: "row",
@@ -297,6 +350,21 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+    marginBottom: 2,
+  },
+  chainIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  chainIndicatorLogo: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginRight: 4,
+  },
+  chainIndicatorText: {
+    color: "#999",
+    fontSize: 12,
   },
   tokenBalance: {
     color: "white",

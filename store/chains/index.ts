@@ -1,4 +1,4 @@
-import { DefaultChains } from "@/defaults/networks";
+import { DefaultChains } from "@/default-objects/networks";
 import { ChainData, Chains } from "@/types/network";
 import { ChainsStore } from "@/types/store/network";
 import { zustandAsyncStorage } from "@/utils/store/save-data/async";

@@ -1,17 +1,17 @@
+import { DEFAULT_CHAINID } from "@/constants/netowrks/chain";
 import { Networks } from "@/enums/network/ecosystem";
 import { useTokensStore } from "@/store/tokens";
-import { useUserTokensStore } from "@/store/user/tokens";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 type TokenListItem = {
@@ -26,7 +26,10 @@ type TokenListItem = {
 };
 
 export default function TokenSelectionScreen() {
-
+  const { fromChainId } = useLocalSearchParams();
+  const [selectedChainId, setSelectedChainId] = useState<number>(
+    Number(fromChainId || DEFAULT_CHAINID)
+  );
   const router = useRouter();
   const { tokens } = useTokensStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +37,7 @@ export default function TokenSelectionScreen() {
 
   // Convert tokens object to array and sort by balance
   const tokensList = useMemo(() => {
-    return Object.values(tokens).sort((a, b) => {
+    return Object.values(tokens[selectedChainId]).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
       const balB = parseFloat(b.bal) || 0;
       return balB - balA;
