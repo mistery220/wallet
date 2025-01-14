@@ -74,7 +74,7 @@ export default function SendScreen() {
             <SelectionButton
               title="Token"
               value={fromToken}
-              onPress={() => router.push("/tokens?from=true")}
+              onPress={() => router.push("/tokens/from")}
             />
           </View>
         </View>
@@ -86,7 +86,7 @@ export default function SendScreen() {
             <SelectionButton
               title="Token"
               value={toToken}
-              onPress={() => router.push("/tokens?from=false")}
+              onPress={() => router.push("/tokens/to")}
             />
           </View>
         </View>
