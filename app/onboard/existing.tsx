@@ -1,4 +1,4 @@
-import ExistingWallet from "@/screens/onboarding/import/ExistingWallet";
+import ExistingWallet from "@/components/screens/onboarding/import/ExistingWallet";
 import React from "react";
 import { StyleSheet } from "react-native";
 

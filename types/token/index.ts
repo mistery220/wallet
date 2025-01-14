@@ -9,3 +9,7 @@ export type Token = {
   address: string;
   logo: string;
 };
+
+export type TokenMap = Record<string, Token>;
+
+export type ChainTokenMap = Record<number, TokenMap>;

@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import { toHex } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import SelectMnemonicLength from "./SelectMnemonicLength";
 
@@ -114,9 +115,13 @@ const ExistingWallet: React.FC = () => {
       };
       const accounts: Account[] = [acc];
       const walletId = new Date().getTime().toString();
+      const privKey = account.getHdKey()
+        .privateKey as Uint8Array<ArrayBufferLike>;
+      const privKeyBytes = toHex(privKey);
       const newWallet = { accounts, id: walletId, isPhrase: true };
       // @TODO add password from user
       await EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
+      await EncryptedStore.encryptAndStore(acc.id, privKeyBytes, "1234");
       addNewWallet(newWallet);
       setActiveAccount(acc);
       setWallet(newWallet);

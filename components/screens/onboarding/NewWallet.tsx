@@ -7,6 +7,7 @@ import * as Clipboard from "expo-clipboard";
 import { useNavigationContainerRef } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { toHex } from "viem";
 import { english, generateMnemonic, mnemonicToAccount } from "viem/accounts";
 
 const NewSeedPhraseScreen = () => {
@@ -14,7 +15,6 @@ const NewSeedPhraseScreen = () => {
   const { addNewWallet } = useWalletStore();
   const { setActiveAccount, setWallet } = useCurrentStore();
   const [copiedText, setCopiedText] = useState("");
-  // Generate mnemonic once and store it in state
   const [mnemonic] = useState(() => generateMnemonic(english));
 
   const copyToClipboard = useCallback(async () => {
@@ -45,11 +45,19 @@ const NewSeedPhraseScreen = () => {
               id: account.address,
             };
             const accounts: Account[] = [acc];
-            const newWallet = { accounts, id: "wallet1", isPhrase: true };
+            const walletId = new Date().getTime().toString();
+            const privKey = account.getHdKey().privateKey as Uint8Array<ArrayBufferLike>;
+            const privKeyBytes = toHex(privKey);
+            const newWallet = { accounts, id: walletId, isPhrase: true };
             // @TODO add password from user
             await EncryptedStore.encryptAndStore(
               newWallet.id,
               mnemonic,
+              "1234"
+            );
+            await EncryptedStore.encryptAndStore(
+              acc.id,
+              privKeyBytes,
               "1234"
             );
             addNewWallet(newWallet);
