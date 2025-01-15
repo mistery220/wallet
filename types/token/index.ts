@@ -10,6 +10,8 @@ export type Token = {
   logo: string;
   usd?: string;
   bal: string;
+  usd_change_24h: string;
+  verified: boolean;
 };
 
 export type TokenMap = Record<string, Token>;

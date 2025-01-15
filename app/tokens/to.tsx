@@ -1,10 +1,10 @@
-import CustomImg from "@/components/image/CustomImg";
 import ChainSelector from "@/components/networks/chains/ChainSelector";
 import { DEFAULT_CHAINID } from "@/constants/netowrks/chain";
-import { Networks } from "@/enums/network/ecosystem";
-import { useChainsStore } from "@/store/chains";
+import { useFormStore } from "@/store/form";
 import { useTokensStore } from "@/store/tokens";
-import { ChainData } from "@/types/network";
+import { useUserTokensStore } from "@/store/user/tokens";
+import { Token } from "@/types/token";
+import { joinStrings } from "@/utils/string/join";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -18,53 +18,29 @@ import {
   View,
 } from "react-native";
 
-type TokenListItem = {
-  name: string;
-  symbol: string;
-  decimals: number;
-  chainId: number;
-  network: Networks;
-  address: string;
-  logo: string;
-  bal: string;
-};
-
-export default function TokenSelectionScreen() {
+export default function ToTokenSelection() {
   const { fromChainId } = useLocalSearchParams();
   const [selectedChainId, setSelectedChainId] = useState<number>(
     Number(fromChainId || DEFAULT_CHAINID)
   );
-  const { chains } = useChainsStore();
+  const { setToTokens } = useFormStore();
   const router = useRouter();
   const { tokens } = useTokensStore();
+  const { tokens: userTokens } = useUserTokensStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [isChainModalVisible, setIsChainModalVisible] = useState(false);
-  const [chainSearchQuery, setChainSearchQuery] = useState("");
-
-  const chainsList = useMemo(() => Object.values(chains), [chains]);
-
-  const filteredChains = useMemo(() => {
-    const query = chainSearchQuery.toLowerCase().trim();
-    if (!query) return chainsList;
-
-    return chainsList.filter((chain) =>
-      chain.displayName.toLowerCase().includes(query)
-    );
-  }, [chainsList, chainSearchQuery]);
-
-  const selectedChain = useMemo(
-    () => chains[selectedChainId],
-    [chains, selectedChainId]
-  );
 
   const tokensList = useMemo(() => {
-    return Object.values(tokens[selectedChainId]).sort((a, b) => {
+    const updatedTokens = {
+      ...tokens[selectedChainId],
+      ...userTokens[selectedChainId],
+    };
+    return Object.values(updatedTokens).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
       const balB = parseFloat(b.bal) || 0;
       return balB - balA;
     });
-  }, [tokens, selectedChainId]);
+  }, [tokens, selectedChainId, userTokens]);
 
   const filteredTokens = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -78,29 +54,13 @@ export default function TokenSelectionScreen() {
     );
   }, [tokensList, searchQuery]);
 
-  const handleSelectToken = (token: TokenListItem) => {
+  const handleSelectToken = (token: Token) => {
+    const formKey = joinStrings(token.chainId, token.address);
+    setToTokens({ [formKey]: token });
     router.back();
   };
 
-  const renderChainItem = ({ item: chain }: { item: ChainData }) => (
-    <Pressable
-      style={styles.chainModalItem}
-      onPress={() => {
-        setSelectedChainId(chain.chainId);
-        setIsChainModalVisible(false);
-      }}
-    >
-      <View style={styles.chainModalItemContent}>
-        <CustomImg uri={chain.logo} style={styles.chainLogo} />
-        <Text style={styles.chainModalItemText}>{chain.displayName}</Text>
-      </View>
-      {selectedChainId === chain.chainId && (
-        <AntDesign name="check" size={20} color="#007AFF" />
-      )}
-    </Pressable>
-  );
-
-  const renderToken = ({ item }: { item: TokenListItem }) => {
+  const renderToken = ({ item }: { item: Token }) => {
     const formattedBalance = parseFloat(item.bal).toFixed(4);
 
     return (

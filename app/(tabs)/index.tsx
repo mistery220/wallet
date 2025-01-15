@@ -1,10 +1,11 @@
+import useBalance from "@/hooks/balance/useBalance";
 import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Image,
   Platform,
@@ -17,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { formatUnits } from "viem";
 
 const ActionButton: React.FC<{
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -31,16 +33,16 @@ const ActionButton: React.FC<{
   </TouchableOpacity>
 );
 
-const formatBalance = (bal: string, decimals: number = 18) => {
-  const value = parseFloat(bal) / Math.pow(10, decimals);
-  return value.toLocaleString(undefined, { maximumFractionDigits: 4 });
-};
-
 const Profile = () => {
   const { active } = useCurrentStore();
   const chains = useChainsStore((state) => state.chains);
   const userTokens = useUserTokensStore((state) => state.tokens);
   const [refreshing, setRefreshing] = useState(false);
+  const { fetchTokenBalance } = useBalance();
+
+  useEffect(() => {
+    fetchTokenBalance({ address: active.address });
+  }, []);
 
   // Calculate total balance
   const totalBalance = useMemo(() => {
@@ -61,7 +63,7 @@ const Profile = () => {
     const allTokens: (Token & { dollarValue?: number })[] = [];
     Object.entries(userTokens).forEach(([chainId, tokensMap]) => {
       Object.values(tokensMap).forEach((token) => {
-        const balance = parseFloat(token.bal) / Math.pow(10, token.decimals);
+        const balance = Number(formatUnits(BigInt(token.bal), token.decimals));
         const dollarValue = token.usd
           ? balance * parseFloat(token.usd)
           : undefined;
@@ -93,7 +95,7 @@ const Profile = () => {
     setRefreshing(true);
     try {
       // @TODO add refresh logic
-      // await refreshTokens();
+      await fetchTokenBalance({ address: active.address });
     } finally {
       setRefreshing(false);
     }
@@ -165,7 +167,7 @@ const Profile = () => {
           <Text style={styles.sectionTitle}>Assets</Text>
           {sortedTokens.map((token) => {
             const chain = chains[token.chainId];
-            const balance = formatBalance(token.bal, token.decimals);
+            const balance = formatUnits(BigInt(token.bal), token.decimals);
 
             return (
               <TouchableOpacity
@@ -194,15 +196,7 @@ const Profile = () => {
                   </View>
                   <View style={styles.tokenSubInfo}>
                     <Text style={styles.tokenName}>{token.name}</Text>
-                    <Text style={styles.tokenValue}>
-                      {token.usd
-                        ? `$${(
-                            parseFloat(token.usd) * parseFloat(balance)
-                          ).toLocaleString(undefined, {
-                            maximumFractionDigits: 2,
-                          })}`
-                        : "—"}
-                    </Text>
+                    <Text style={styles.tokenValue}>${token.dollarValue}</Text>
                   </View>
                 </View>
               </TouchableOpacity>

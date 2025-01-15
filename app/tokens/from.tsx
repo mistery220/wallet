@@ -1,5 +1,9 @@
-import { Networks } from "@/enums/network/ecosystem";
+import ChainSelector from "@/components/networks/chains/ChainSelector";
+import { DEFAULT_CHAINID } from "@/constants/netowrks/chain";
+import { useFormStore } from "@/store/form";
 import { useUserTokensStore } from "@/store/user/tokens";
+import { Token } from "@/types/token";
+import { joinStrings } from "@/utils/string/join";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,33 +17,25 @@ import {
   View,
 } from "react-native";
 
-type TokenListItem = {
-  name: string;
-  symbol: string;
-  decimals: number;
-  chainId: number;
-  network: Networks;
-  address: string;
-  logo: string;
-  bal: string;
-};
-
-export default function TokenSelectionScreen() {
+export default function FromTokenSelection() {
+  const { fromChainId } = useLocalSearchParams();
+  const [selectedChainId, setSelectedChainId] = useState<number>(
+    Number(fromChainId || DEFAULT_CHAINID)
+  );
+  const { setFromTokens } = useFormStore();
   const router = useRouter();
   const { tokens } = useUserTokensStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
-  // Convert tokens object to array and sort by balance
   const tokensList = useMemo(() => {
-    return Object.values(tokens).sort((a, b) => {
+    return Object.values(tokens[selectedChainId]).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
       const balB = parseFloat(b.bal) || 0;
       return balB - balA;
     });
-  }, [tokens]);
+  }, [tokens, selectedChainId]);
 
-  // Filter tokens based on search query
   const filteredTokens = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return tokensList;
@@ -52,13 +48,13 @@ export default function TokenSelectionScreen() {
     );
   }, [tokensList, searchQuery]);
 
-  const handleSelectToken = (token: TokenListItem) => {
-    // Navigate back with selected token
+  const handleSelectToken = (token: Token) => {
+    const formKey = joinStrings(token.chainId, token.address);
+    setFromTokens({ [formKey]: token });
     router.back();
-    // You might want to use a callback or store to handle the selected token
   };
 
-  const renderToken = ({ item }: { item: TokenListItem }) => {
+  const renderToken = ({ item }: { item: Token }) => {
     const formattedBalance = parseFloat(item.bal).toFixed(4);
 
     return (
@@ -66,20 +62,18 @@ export default function TokenSelectionScreen() {
         style={styles.tokenItem}
         onPress={() => handleSelectToken(item)}
       >
-        <View style={styles.tokenInfo}>
-          <Image
-            source={{ uri: item.logo }}
-            style={styles.tokenLogo}
-            // defaultSource={require("../assets/default-token.png")}
-          />
-          <View style={styles.tokenDetails}>
-            <Text style={styles.tokenSymbol}>{item.symbol}</Text>
-            <Text style={styles.tokenName}>{item.name}</Text>
+        <View style={styles.tokenContent}>
+          <View style={styles.tokenInfo}>
+            <Image source={{ uri: item.logo }} style={styles.tokenLogo} />
+            <View style={styles.tokenDetails}>
+              <Text style={styles.tokenSymbol}>{item.symbol}</Text>
+              <Text style={styles.tokenName}>{item.name}</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>{formattedBalance}</Text>
-          <Text style={styles.networkText}>{item.network}</Text>
+          <View style={styles.balanceContainer}>
+            <Text style={styles.balanceText}>{formattedBalance}</Text>
+            <Text style={styles.networkText}>{item.network}</Text>
+          </View>
         </View>
       </Pressable>
     );
@@ -87,6 +81,12 @@ export default function TokenSelectionScreen() {
 
   return (
     <View style={styles.container}>
+      <ChainSelector
+        onChainSelect={(chainId) => {
+          setSelectedChainId(chainId);
+        }}
+        selectedChainId={selectedChainId}
+      />
       <View style={styles.searchContainer}>
         <View
           style={[
@@ -123,7 +123,7 @@ export default function TokenSelectionScreen() {
       <FlashList
         data={filteredTokens}
         renderItem={renderToken}
-        estimatedItemSize={72}
+        estimatedItemSize={88}
         keyExtractor={(item) => `${item.address}-${item.network}`}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -140,27 +140,44 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1a1a1a",
   },
-  headerTitle: {
-    fontSize: 20,
+  chainSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+    backgroundColor: "#2A2A2A",
+  },
+  selectedChainInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  selectedChainName: {
+    color: "#FFF",
+    fontSize: 16,
     fontWeight: "600",
-    color: "white",
-    marginLeft: 10,
+    marginLeft: 8,
+  },
+  chainLogo: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   searchContainer: {
-    padding: 20,
-    paddingTop: 0,
+    padding: 16,
   },
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: "#2A2A2A",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "transparent",
+    borderColor: "#333",
   },
   searchWrapperFocused: {
     borderColor: "#007AFF",
-    backgroundColor: "#3a3a3a",
+    backgroundColor: "#3A3A3A",
   },
   searchIcon: {
     padding: 12,
@@ -175,7 +192,19 @@ const styles = StyleSheet.create({
   clearButton: {
     padding: 12,
   },
-  tokenItem: {
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#1a1a1a",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
+    paddingBottom: 20,
+  },
+  modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -183,28 +212,85 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#333",
   },
+  modalTitle: {
+    color: "#FFF",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  modalSearchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    margin: 16,
+    padding: 12,
+    backgroundColor: "#2A2A2A",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  modalSearchInput: {
+    flex: 1,
+    color: "white",
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  chainModalItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+  },
+  chainModalItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  chainModalItemText: {
+    color: "#FFF",
+    fontSize: 16,
+    marginLeft: 12,
+  },
+  tokenItem: {
+    margin: 8,
+    marginBottom: 0,
+    backgroundColor: "#2A2A2A",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  tokenContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+  },
   tokenInfo: {
     flexDirection: "row",
     alignItems: "center",
   },
   tokenLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: "#3A3A3A",
   },
   tokenDetails: {
     justifyContent: "center",
   },
   tokenSymbol: {
     color: "white",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
   },
   tokenName: {
     color: "#999",
     fontSize: 14,
-    marginTop: 2,
+    marginTop: 4,
   },
   balanceContainer: {
     alignItems: "flex-end",
@@ -212,12 +298,16 @@ const styles = StyleSheet.create({
   balanceText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   networkText: {
     color: "#999",
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 4,
+    backgroundColor: "#333",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   emptyContainer: {
     flex: 1,
