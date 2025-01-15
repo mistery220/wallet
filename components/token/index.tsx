@@ -37,7 +37,7 @@ const TokenItem = ({ token }: { token: Token & { dollarValue?: number } }) => {
           <Text style={styles.tokenValue}>
             $
             {token.dollarValue
-              ? trimUnits(token.dollarValue, token.decimals)
+              ? trimUnits(token.dollarValue)
               : "--"}
           </Text>
         </View>
