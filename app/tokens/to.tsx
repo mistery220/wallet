@@ -1,5 +1,6 @@
+import CustomImg from "@/components/image/CustomImg";
 import ChainSelector from "@/components/networks/chains/ChainSelector";
-import { DEFAULT_CHAINID } from "@/constants/netowrks/chain";
+import { DEFAULT_CHAINID } from "@/constants/network/chain";
 import { useFormStore } from "@/store/form";
 import { useTokensStore } from "@/store/tokens";
 import { useUserTokensStore } from "@/store/user/tokens";
@@ -9,14 +10,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function ToTokenSelection() {
   const { fromChainId } = useLocalSearchParams();
@@ -70,7 +64,7 @@ export default function ToTokenSelection() {
       >
         <View style={styles.tokenContent}>
           <View style={styles.tokenInfo}>
-            <Image source={{ uri: item.logo }} style={styles.tokenLogo} />
+            <CustomImg uri={item.logo} style={styles.tokenLogo} />
             <View style={styles.tokenDetails}>
               <Text style={styles.tokenSymbol}>{item.symbol}</Text>
               <Text style={styles.tokenName}>{item.name}</Text>

@@ -1,13 +1,14 @@
+import TokenItem from "@/components/token";
 import useBalance from "@/hooks/balance/useBalance";
 import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
+import { joinStrings } from "@/utils/string/join";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Image,
   Platform,
   RefreshControl,
   SafeAreaView,
@@ -164,42 +165,12 @@ const Profile = () => {
         </View>
 
         <View style={styles.assetsSection}>
-          <Text style={styles.sectionTitle}>Assets</Text>
           {sortedTokens.map((token) => {
-            const chain = chains[token.chainId];
-            const balance = formatUnits(BigInt(token.bal), token.decimals);
-
             return (
-              <TouchableOpacity
-                key={`${token.chainId}-${token.address}`}
-                style={styles.tokenItem}
-                activeOpacity={0.7}
-              >
-                <Image source={{ uri: token.logo }} style={styles.tokenLogo} />
-                <View style={styles.tokenInfo}>
-                  <View style={styles.tokenMainInfo}>
-                    <View style={styles.tokenTitleContainer}>
-                      <Text style={styles.tokenSymbol}>{token.symbol}</Text>
-                      <View style={styles.chainIndicator}>
-                        {chain?.logo && (
-                          <Image
-                            source={{ uri: chain.logo }}
-                            style={styles.chainIndicatorLogo}
-                          />
-                        )}
-                        <Text style={styles.chainIndicatorText}>
-                          {chain?.displayName}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.tokenBalance}>{balance}</Text>
-                  </View>
-                  <View style={styles.tokenSubInfo}>
-                    <Text style={styles.tokenName}>{token.name}</Text>
-                    <Text style={styles.tokenValue}>${token.dollarValue}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+              <TokenItem
+                key={joinStrings(token.chainId, token.address)}
+                token={token}
+              />
             );
           })}
         </View>
@@ -307,71 +278,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 16,
-  },
-  tokenItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#333",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  tokenLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  tokenInfo: {
-    flex: 1,
-  },
-  tokenMainInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 4,
-  },
-  tokenTitleContainer: {
-    flex: 1,
-    marginRight: 8,
-  },
-  tokenSubInfo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  tokenSymbol: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  chainIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  chainIndicatorLogo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    marginRight: 4,
-  },
-  chainIndicatorText: {
-    color: "#999",
-    fontSize: 12,
-  },
-  tokenBalance: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  tokenName: {
-    color: "#999",
-    fontSize: 14,
-  },
-  tokenValue: {
-    color: "#999",
-    fontSize: 14,
   },
 });
 

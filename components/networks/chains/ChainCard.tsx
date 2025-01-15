@@ -1,6 +1,7 @@
+import CustomImg from "@/components/image/CustomImg";
 import { ChainData } from "@/types/network";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const ChainCard = ({
   chain,
@@ -16,7 +17,7 @@ const ChainCard = ({
   >
     <View style={styles.chainHeader}>
       <View style={styles.leftSection}>
-        <Image source={{ uri: chain.logo }} style={styles.chainLogo} />
+        <CustomImg uri={chain.logo} style={styles.chainLogo} />
         <View style={styles.chainInfo}>
           <Text style={styles.chainName}>{chain.displayName}</Text>
           <View style={styles.typeContainer}>
