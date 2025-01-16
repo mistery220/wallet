@@ -1,5 +1,5 @@
-import CustomImg from "@/components/image/CustomImg";
 import ChainSelector from "@/components/networks/chains/ChainSelector";
+import TokenListItem from "@/components/token/TokenListItem";
 import { DEFAULT_CHAINID } from "@/constants/network/chain";
 import { useFormStore } from "@/store/form";
 import { useUserTokensStore } from "@/store/user/tokens";
@@ -41,37 +41,6 @@ export default function FromTokenSelection() {
         token.address.toLowerCase().includes(query)
     );
   }, [tokensList, searchQuery]);
-
-  const handleSelectToken = (token: Token) => {
-    const formKey = joinStrings(token.chainId, token.address);
-    setFromTokens({ [formKey]: token });
-    router.back();
-  };
-
-  const renderToken = ({ item }: { item: Token }) => {
-    const formattedBalance = parseFloat(item.bal).toFixed(4);
-
-    return (
-      <Pressable
-        style={styles.tokenItem}
-        onPress={() => handleSelectToken(item)}
-      >
-        <View style={styles.tokenContent}>
-          <View style={styles.tokenInfo}>
-            <CustomImg uri={item.logo} style={styles.tokenLogo} />
-            <View style={styles.tokenDetails}>
-              <Text style={styles.tokenSymbol}>{item.symbol}</Text>
-              <Text style={styles.tokenName}>{item.name}</Text>
-            </View>
-          </View>
-          <View style={styles.balanceContainer}>
-            <Text style={styles.balanceText}>{formattedBalance}</Text>
-            <Text style={styles.networkText}>{item.network}</Text>
-          </View>
-        </View>
-      </Pressable>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -116,7 +85,7 @@ export default function FromTokenSelection() {
 
       <FlashList
         data={filteredTokens}
-        renderItem={renderToken}
+        renderItem={({ item }) => <TokenListItem item={item} />}
         estimatedItemSize={88}
         keyExtractor={(item) => `${item.address}-${item.network}`}
         ListEmptyComponent={

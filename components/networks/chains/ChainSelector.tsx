@@ -4,7 +4,6 @@ import { ChainData } from "@/types/network";
 import { AntDesign } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   Modal,
   Pressable,
@@ -14,9 +13,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const MODAL_HEIGHT = SCREEN_HEIGHT * 0.7;
 
 interface ChainSelectorProps {
   selectedChainId: number;
@@ -29,6 +25,7 @@ export default function ChainSelector({
 }: ChainSelectorProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const { chains } = useChainsStore();
   const selectedChain = chains[selectedChainId];
 
@@ -47,64 +44,36 @@ export default function ChainSelector({
   };
 
   const renderChainLogo = (uri: string) => (
-    <CustomImg uri={uri} style={styles.svgLogo} />
+    <CustomImg uri={uri} style={styles.chainLogo} />
   );
 
   const renderChainItem = ({ item: chain }: { item: ChainData }) => (
-    <Pressable
-      style={[
-        styles.chainItem,
-        selectedChainId === chain.chainId && styles.chainItemSelected,
-      ]}
-      onPress={() => handleChainSelect(chain.chainId)}
-    >
-      <View style={styles.chainItemContent}>
-        {renderChainLogo(chain.logo)}
-        <Text style={styles.chainName}>{chain.displayName}</Text>
-      </View>
-      {selectedChainId === chain.chainId && (
-        <AntDesign name="check" size={20} color="#007AFF" />
-      )}
-    </Pressable>
-  );
-
-  const ListHeaderComponent = () => (
-    <>
-      <View style={styles.modalHandle} />
-      <View style={styles.modalHeader}>
-        <Text style={styles.modalTitle}>Select Network</Text>
-        <Pressable hitSlop={12} onPress={() => setIsModalVisible(false)}>
-          <AntDesign name="close" size={24} color="#999" />
-        </Pressable>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchWrapper}>
-          <AntDesign name="search1" size={20} color="#999" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search networks"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery ? (
-            <Pressable hitSlop={12} onPress={() => setSearchQuery("")}>
-              <AntDesign name="close" size={20} color="#999" />
-            </Pressable>
-          ) : null}
+    <View style={styles.chainItemWrapper}>
+      <Pressable
+        style={[
+          styles.chainItem,
+          selectedChainId === chain.chainId && styles.chainItemSelected,
+        ]}
+        onPress={() => handleChainSelect(chain.chainId)}
+      >
+        <View style={styles.chainItemContent}>
+          {renderChainLogo(chain.logo)}
+          <Text style={styles.chainItemText}>{chain.displayName}</Text>
         </View>
-      </View>
-    </>
+        {selectedChainId === chain.chainId && (
+          <AntDesign name="check" size={20} color="#007AFF" />
+        )}
+      </Pressable>
+    </View>
   );
 
   return (
-    <View>
+    <View style={styles.chainSelectorSection}>
       <Pressable
-        style={styles.selector}
+        style={styles.chainSelector}
         onPress={() => setIsModalVisible(true)}
       >
-        <View style={styles.selectorContent}>
+        <View style={styles.selectedChainInfo}>
           {selectedChain && (
             <>
               {renderChainLogo(selectedChain.logo)}
@@ -124,15 +93,58 @@ export default function ChainSelector({
         onRequestClose={() => setIsModalVisible(false)}
       >
         <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
-          <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Select Network</Text>
+                  <Pressable
+                    hitSlop={12}
+                    onPress={() => setIsModalVisible(false)}
+                  >
+                    <AntDesign name="close" size={24} color="#999" />
+                  </Pressable>
+                </View>
+
+                <View style={styles.searchContainer}>
+                  <View
+                    style={[
+                      styles.searchWrapper,
+                      isSearchFocused && styles.searchWrapperFocused,
+                    ]}
+                  >
+                    <AntDesign
+                      name="search1"
+                      size={20}
+                      color="#999"
+                      style={styles.searchIcon}
+                    />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder="Search networks"
+                      placeholderTextColor="#999"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onBlur={() => setIsSearchFocused(false)}
+                    />
+                    {searchQuery ? (
+                      <Pressable
+                        style={styles.clearButton}
+                        hitSlop={12}
+                        onPress={() => setSearchQuery("")}
+                      >
+                        <AntDesign name="close" size={20} color="#999" />
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </View>
+
                 <FlatList
                   data={filteredChains}
                   renderItem={renderChainItem}
                   keyExtractor={(item) => item.chainId.toString()}
                   showsVerticalScrollIndicator={true}
-                  ListHeaderComponent={ListHeaderComponent}
                   contentContainerStyle={styles.chainList}
                   ListEmptyComponent={
                     <View style={styles.emptyContainer}>
@@ -150,17 +162,19 @@ export default function ChainSelector({
 }
 
 const styles = StyleSheet.create({
-  selector: {
+  chainSelectorSection: {
+    margin: 2,
+  },
+  chainSelector: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
     backgroundColor: "#2A2A2A",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#333",
   },
-  selectorContent: {
+  selectedChainInfo: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -168,38 +182,25 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 16,
     fontWeight: "600",
-    marginLeft: 12,
+    marginLeft: 8,
   },
-  logoWrapper: {
+  chainLogo: {
     width: 32,
     height: 32,
-    backgroundColor: "#fff",
     borderRadius: 16,
-    overflow: "hidden",
-    padding: 4,
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
   },
-  svgLogo: {
-    borderRadius: 16,
-  },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#1A1A1A",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    height: MODAL_HEIGHT,
-  },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#666",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 8,
+    backgroundColor: "#1a1a1a",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
   },
   modalHeader: {
     flexDirection: "row",
@@ -211,13 +212,11 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: "#FFF",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
   },
   searchContainer: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
   },
   searchWrapper: {
     flexDirection: "row",
@@ -226,27 +225,43 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#333",
-    paddingHorizontal: 12,
+  },
+  searchWrapperFocused: {
+    borderColor: "#007AFF",
+    backgroundColor: "#3A3A3A",
+  },
+  searchIcon: {
+    padding: 12,
   },
   searchInput: {
     flex: 1,
     color: "white",
     fontSize: 16,
     padding: 12,
-    paddingLeft: 8,
+    paddingLeft: 0,
+  },
+  clearButton: {
+    padding: 12,
   },
   chainList: {
-    paddingHorizontal: 8,
+    padding: 8,
     paddingBottom: 34,
+  },
+  chainItemWrapper: {
+    marginBottom: 8,
   },
   chainItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 12,
-    marginVertical: 4,
-    borderRadius: 12,
+    padding: 16,
     backgroundColor: "#2A2A2A",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
   chainItemSelected: {
     backgroundColor: "#3A3A3A",
@@ -257,7 +272,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  chainName: {
+  chainItemText: {
     color: "#FFF",
     fontSize: 16,
     marginLeft: 12,

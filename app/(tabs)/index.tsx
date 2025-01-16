@@ -1,5 +1,5 @@
-import TokenItem from "@/components/token";
-import useBalance from "@/hooks/balance/useBalance";
+import UserTokenListItem from "@/components/token/UserTokenListItem";
+import useTokenBalance from "@/hooks/balance/useBalance";
 import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
@@ -39,7 +39,7 @@ const Profile = () => {
   const chains = useChainsStore((state) => state.chains);
   const userTokens = useUserTokensStore((state) => state.tokens);
   const [refreshing, setRefreshing] = useState(false);
-  const { fetchTokenBalance } = useBalance();
+  const { fetchTokenBalance } = useTokenBalance();
 
   useEffect(() => {
     fetchTokenBalance({ address: active.address });
@@ -93,10 +93,11 @@ const Profile = () => {
   }, [userTokens]);
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
     try {
-      // @TODO add refresh logic
-      await fetchTokenBalance({ address: active.address });
+      if (!refreshing) {
+        setRefreshing(true);
+        await fetchTokenBalance({ address: active.address });
+      }
     } finally {
       setRefreshing(false);
     }
@@ -167,7 +168,7 @@ const Profile = () => {
         <View style={styles.assetsSection}>
           {sortedTokens.map((token) => {
             return (
-              <TokenItem
+              <UserTokenListItem
                 key={joinStrings(token.chainId, token.address)}
                 token={token}
               />

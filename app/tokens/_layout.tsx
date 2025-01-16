@@ -5,8 +5,8 @@ import { StyleSheet } from "react-native";
 const TokensLayout = () => {
   return (
     <Stack>
-      <Stack.Screen name="to" options={{ headerTitle: "Select From" }} />
-      <Stack.Screen name="from" options={{ headerTitle: "Select To" }} />
+      <Stack.Screen name="to" options={{ headerTitle: "Select To" }} />
+      <Stack.Screen name="from" options={{ headerTitle: "Select From" }} />
     </Stack>
   );
 };

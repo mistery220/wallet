@@ -5,7 +5,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CustomImg from "../image/CustomImg";
 
-const TokenItem = ({ token }: { token: Token & { dollarValue?: number } }) => {
+const UserTokenListItem = ({ token }: { token: Token & { dollarValue?: number } }) => {
   const chains = useChainsStore((state) => state.chains);
   const chain = chains[token.chainId];
   const balance = formatAndTrimUnits(token.bal, token.decimals);
@@ -46,7 +46,7 @@ const TokenItem = ({ token }: { token: Token & { dollarValue?: number } }) => {
   );
 };
 
-export default TokenItem;
+export default UserTokenListItem;
 
 const styles = StyleSheet.create({
   tokenItem: {

@@ -24,20 +24,19 @@ const CustomImg: React.FC<CustomImgProps> = ({
   height = 44,
 }) => {
   const [hasError, setHasError] = useState(false);
-  const isSvg = uri.toLowerCase().endsWith(".svg");
-
-  if (hasError) {
+  if (!uri || hasError) {
     const iconStyle = style as StyleProp<TextStyle>;
 
     return (
       <MaterialIcons
         name="error"
-        size={width < 20 ? width : 20}
+        size={width}
         color="#999"
         style={iconStyle}
       />
     );
   }
+  const isSvg = uri.toLowerCase().endsWith(".svg");
 
   if (isSvg) {
     return (

@@ -19,9 +19,10 @@ type TokenBalance = {
   chain_id: number;
 };
 
-export default function useBalance() {
+export default function useTokenBalance() {
   const { setTokens } = useUserTokensStore();
   const { chains } = useChainsStore();
+  const { tokens } = useUserTokensStore();
 
   async function fetchAllBalance({ address, chainId }: BalanceParams) {
     try {
@@ -35,9 +36,6 @@ export default function useBalance() {
       });
 
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
       const data = await response.json();
       const formattedRespone = formatUnmarshalResponse(
         chains[chainId].type,
@@ -80,12 +78,11 @@ export default function useBalance() {
       }, {} as ChainTokenMap);
 
       // Update the token store
-      setTokens(tokensByChain);
+      setTokens({ ...tokens, ...tokensByChain });
 
       return tokensByChain;
     } catch (error) {
       console.error("Error fetching token balances:", error);
-      throw error;
     }
   }
 
