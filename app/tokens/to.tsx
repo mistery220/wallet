@@ -5,7 +5,6 @@ import { useFormStore } from "@/store/form";
 import { useTokensStore } from "@/store/tokens";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
-import { joinStrings } from "@/utils/string/join";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,7 +12,7 @@ import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function ToTokenSelection() {
-  const { setToTokens } = useFormStore();
+  const { setToToken } = useFormStore();
   const router = useRouter();
   const { fromChainId } = useLocalSearchParams();
   const [selectedChainId, setSelectedChainId] = useState<number>(
@@ -25,8 +24,7 @@ export default function ToTokenSelection() {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSelectToken = (token: Token) => {
-    const formKey = joinStrings(token.chainId, token.address);
-    setToTokens({ [formKey]: token });
+    setToToken(token);
     router.back();
   };
 

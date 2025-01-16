@@ -4,7 +4,6 @@ import { DEFAULT_CHAINID } from "@/constants/network/chain";
 import { useFormStore } from "@/store/form";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
-import { joinStrings } from "@/utils/string/join";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,15 +15,14 @@ export default function FromTokenSelection() {
   const [selectedChainId, setSelectedChainId] = useState<number>(
     Number(fromChainId || DEFAULT_CHAINID)
   );
-  const { setFromTokens } = useFormStore();
+  const { setFromToken } = useFormStore();
   const router = useRouter();
   const { tokens } = useUserTokensStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSelectToken = (token: Token) => {
-    const formKey = joinStrings(token.chainId, token.address);
-    setFromTokens({ [formKey]: token });
+    setFromToken(token);
     router.back();
   };
 

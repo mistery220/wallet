@@ -1,13 +1,13 @@
-import { TokenMap } from "../token";
+import { Token } from "../token";
 
 type FormState = {
-  from: TokenMap;
-  to: TokenMap;
+  from?: Token;
+  to?: Token;
 };
 
 type FormActions = {
-  setToTokens: (tokens: TokenMap) => void;
-  setFromTokens: (token: TokenMap) => void;
+  setToToken: (tokens: Token) => void;
+  setFromToken: (token: Token) => void;
 };
 
 export type FormStore = FormState & FormActions;

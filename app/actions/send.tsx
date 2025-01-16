@@ -1,23 +1,17 @@
+import FromContainer from "@/components/token/swap/FromContainer";
+import ToContainer from "@/components/token/swap/ToContainer";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { isAddress } from "viem";
 
 export default function SendScreen() {
-  const [recipient, setRecipient] = useState("");
-  const [fromChain, setFromChain] = useState("");
+  const [payAmount, setPayAmount] = useState("");
+  const [receiveAmount, setReceiveAmount] = useState("");
   const [fromToken, setFromToken] = useState("");
-  const [toChain, setToChain] = useState("");
   const [toToken, setToToken] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
+  const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -36,94 +30,54 @@ export default function SendScreen() {
       return;
     }
 
-    if (!fromChain || !fromToken || !toChain || !toToken) {
-      setError("Please select both chains and tokens");
-      return;
-    }
-
     setError("");
     router.push("/transaction");
   };
 
-  const SelectionButton = ({
-    title,
-    value,
-    onPress,
-  }: {
-    title: string;
-    value: string;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      style={[styles.selectionButton, !value && styles.emptySelection]}
-      onPress={onPress}
-    >
-      <Text style={styles.selectionButtonText}>
-        {value || `Select ${title}`}
-      </Text>
-      <AntDesign name="right" size={20} color="#999" />
-    </Pressable>
-  );
-
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>From</Text>
-          <View style={styles.selectionContainer}>
-            <SelectionButton
-              title="Token"
-              value={fromToken}
-              onPress={() => router.push("/tokens/from")}
-            />
-          </View>
+      <View style={styles.content}>
+        {/* You Pay Section */}
+        <FromContainer payAmount={payAmount} setPayAmount={setPayAmount} />
+
+        {/* Swap Icon */}
+        <View style={styles.swapIconContainer}>
+          <Pressable style={styles.swapButton}>
+            <AntDesign name="swap" size={24} color="#fff" />
+          </Pressable>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>To</Text>
+        {/* You Receive Section */}
+        <ToContainer
+          title="Recipient Receives"
+          receiveAmount={receiveAmount}
+          setReceiveAmount={setReceiveAmount}
+        />
 
-          <View style={styles.selectionContainer}>
-            <SelectionButton
-              title="Token"
-              value={toToken}
-              onPress={() => router.push("/tokens/to")}
-            />
-          </View>
-        </View>
-
-        <View style={styles.fieldContainer}>
-          <Text style={styles.fieldLabel}>Recipient Address</Text>
+        {/* Recipient Address */}
+        <View style={styles.recipientContainer}>
           <TextInput
-            style={[
-              styles.input,
-              isFocused && styles.focusedInput,
-              error && { borderColor: "#ff4444" },
-            ]}
-            placeholder="Enter Ethereum address"
+            style={styles.recipientInput}
+            placeholder="Recipient Address"
             placeholderTextColor="#666"
             value={recipient}
             onChangeText={(text) => {
               setRecipient(text);
               setError("");
             }}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
           />
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
         </View>
-      </ScrollView>
+      </View>
 
       <View style={styles.footer}>
         <Pressable
           style={[
             styles.sendButton,
-            (!recipient || !fromChain || !fromToken || !toChain || !toToken) &&
-              styles.disabledButton,
+            (!recipient || !fromToken || !toToken) && styles.disabledButton,
           ]}
           onPress={handleSend}
-          disabled={
-            !recipient || !fromChain || !fromToken || !toChain || !toToken
-          }
+          disabled={!recipient || !fromToken || !toToken}
         >
           <Text style={styles.sendButtonText}>Send</Text>
         </Pressable>
@@ -135,67 +89,58 @@ export default function SendScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "white",
-    marginLeft: 10,
+    backgroundColor: "#1A1A1A",
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: 16,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "white",
-    marginBottom: 12,
-  },
-  selectionContainer: {
-    gap: 12,
-  },
-  selectionButton: {
+  tokenSelector: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: "#3C3C3C",
+    padding: 8,
+    borderRadius: 24,
+    minWidth: 120,
+  },
+  tokenIconContainer: {
+    marginRight: 8,
+  },
+  tokenIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#666",
+  },
+  tokenSelectorText: {
+    color: "white",
+    fontSize: 16,
+    marginRight: 8,
+    flex: 1,
+  },
+
+  swapIconContainer: {
+    alignItems: "center",
+    marginVertical: -16,
+    zIndex: 1,
+  },
+  swapButton: {
+    backgroundColor: "#4C4C4C",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recipientContainer: {
+    marginTop: 24,
+  },
+  recipientInput: {
+    backgroundColor: "#2C2C2C",
     borderRadius: 12,
     padding: 16,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  emptySelection: {
-    borderColor: "#444",
-  },
-  selectionButtonText: {
     color: "white",
     fontSize: 16,
-  },
-  fieldContainer: {
-    marginBottom: 16,
-  },
-  fieldLabel: {
-    color: "#999",
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#333",
-    borderRadius: 12,
-    padding: 12,
-    color: "white",
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  focusedInput: {
-    borderColor: "#007AFF",
-    backgroundColor: "#3a3a3a",
   },
   errorText: {
     color: "#ff4444",
@@ -203,9 +148,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   footer: {
-    padding: 20,
-    paddingBottom: 40,
-    backgroundColor: "#1a1a1a",
+    padding: 16,
+    paddingBottom: 32,
   },
   sendButton: {
     backgroundColor: "#007AFF",

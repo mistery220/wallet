@@ -26,8 +26,6 @@ export default function ViewSeedPhrase() {
   const [copiedText, setCopiedText] = useState("");
   const [seedPhrase, setSeedPhrase] = useState<string>();
 
-  console.log({ walletId, password });
-
   const handleVerify = async () => {
     setIsVerifying(true);
     try {
