@@ -22,6 +22,12 @@ export default function FromTokenSelection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
+  const handleSelectToken = (token: Token) => {
+    const formKey = joinStrings(token.chainId, token.address);
+    setFromTokens({ [formKey]: token });
+    router.back();
+  };
+
   const tokensList = useMemo(() => {
     return Object.values(tokens[selectedChainId]).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
@@ -85,7 +91,9 @@ export default function FromTokenSelection() {
 
       <FlashList
         data={filteredTokens}
-        renderItem={({ item }) => <TokenListItem item={item} />}
+        renderItem={({ item }) => (
+          <TokenListItem handleSelectToken={handleSelectToken} item={item} />
+        )}
         estimatedItemSize={88}
         keyExtractor={(item) => `${item.address}-${item.network}`}
         ListEmptyComponent={

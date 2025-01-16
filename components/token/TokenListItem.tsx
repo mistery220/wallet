@@ -1,20 +1,16 @@
-import { useFormStore } from "@/store/form";
 import { Token } from "@/types/token";
 import { formatAndTrimUnits } from "@/utils/general/formatter";
-import { joinStrings } from "@/utils/string/join";
-import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import CustomImg from "../image/CustomImg";
 
-const TokenListItem = ({ item }: { item: Token }) => {
-  const { setToTokens } = useFormStore();
-  const router = useRouter();
-  const handleSelectToken = (token: Token) => {
-    const formKey = joinStrings(token.chainId, token.address);
-    setToTokens({ [formKey]: token });
-    router.back();
-  };
+const TokenListItem = ({
+  item,
+  handleSelectToken,
+}: {
+  item: Token;
+  handleSelectToken: (token: Token) => void;
+}) => {
   return (
     <View>
       <Pressable

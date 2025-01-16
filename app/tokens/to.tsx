@@ -1,15 +1,20 @@
 import ChainSelector from "@/components/networks/chains/ChainSelector";
 import TokenListItem from "@/components/token/TokenListItem";
 import { DEFAULT_CHAINID } from "@/constants/network/chain";
+import { useFormStore } from "@/store/form";
 import { useTokensStore } from "@/store/tokens";
 import { useUserTokensStore } from "@/store/user/tokens";
+import { Token } from "@/types/token";
+import { joinStrings } from "@/utils/string/join";
 import { AntDesign } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function ToTokenSelection() {
+  const { setToTokens } = useFormStore();
+  const router = useRouter();
   const { fromChainId } = useLocalSearchParams();
   const [selectedChainId, setSelectedChainId] = useState<number>(
     Number(fromChainId || DEFAULT_CHAINID)
@@ -18,6 +23,12 @@ export default function ToTokenSelection() {
   const { tokens: userTokens } = useUserTokensStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+
+  const handleSelectToken = (token: Token) => {
+    const formKey = joinStrings(token.chainId, token.address);
+    setToTokens({ [formKey]: token });
+    router.back();
+  };
 
   const tokensList = useMemo(() => {
     const updatedTokens = {
@@ -86,7 +97,9 @@ export default function ToTokenSelection() {
 
       <FlashList
         data={filteredTokens}
-        renderItem={({ item }) => <TokenListItem item={item} />}
+        renderItem={({ item }) => (
+          <TokenListItem handleSelectToken={handleSelectToken} item={item} />
+        )}
         estimatedItemSize={88}
         keyExtractor={(item) => `${item.address}-${item.network}`}
         ListEmptyComponent={
