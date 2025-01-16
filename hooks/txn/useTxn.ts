@@ -1,24 +1,25 @@
 import { Networks } from "@/enums/network/ecosystem";
 import { TxnStatus } from "@/enums/status/txn";
+import { useChainsStore } from "@/store/chains";
 import useEvmTxn from "./evm/useEvmTxn";
-import useSvmTxn from "./svm/useSvmTxn";
 
 export default function useTxn() {
-  const { sendEvmTransaction, waitForEvmTransactionReceipt } = useEvmTxn();
-  const { sendSvmTransaction, waitForSvmTransactionReceipt } = useSvmTxn();
+  const { chains } = useChainsStore();
+  const { sendEvmTransaction, waitForEvmTransaction } = useEvmTxn();
 
-  async function sendBridgeTransaction({
-    network,
+  async function sendTransaction({
     chainId,
     data,
+    toAddress,
   }: {
-    network: Networks;
     chainId: number;
     data: string;
+    toAddress: string;
   }) {
+    const network = chains[chainId].type;
     switch (network) {
       case Networks.EVM: {
-        return await sendEvmTransaction({ chainId });
+        return await sendEvmTransaction({ chainId, data, toAddress });
       }
       //   case Networks.SVM: {
       //     return await sendSvmTransaction({data});
@@ -30,27 +31,27 @@ export default function useTxn() {
     }
   }
 
-  async function waitForTransactionReceipt({
+  async function waitForTransaction({
     network,
-    txnHash,
+    hash,
     chainId,
   }: {
     network: Networks;
     chainId: number;
-    txnHash: string;
+    hash: string;
   }) {
     switch (network) {
       case Networks.EVM: {
-        return await waitForEvmTransactionReceipt(chainId, txnHash);
+        return await waitForEvmTransaction(chainId, hash);
       }
-      case Networks.SVM: {
-        return await waitForSvmTransactionReceipt(txnHash);
-      }
+      // case Networks.SVM: {
+      //   return await waitForSvmTransactionReceipt(txnHash);
+      // }
       default:
         return {
           status: TxnStatus.Reverted,
         };
     }
   }
-  return { sendBridgeTransaction, waitForTransactionReceipt };
+  return { sendTransaction, waitForTransaction };
 }

@@ -1,25 +1,24 @@
 import FromContainer from "@/components/token/swap/FromContainer";
 import ToContainer from "@/components/token/swap/ToContainer";
+import useSendTxn from "@/hooks/txn/send/useSendTxn";
+import { useFormStore } from "@/store/form";
+import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { isAddress } from "viem";
 
 export default function SendScreen() {
   const [payAmount, setPayAmount] = useState("");
   const [receiveAmount, setReceiveAmount] = useState("");
-  const [fromToken, setFromToken] = useState("");
-  const [toToken, setToToken] = useState("");
+  const { from: fromToken, to: toToken } = useFormStore();
   const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { sendToken } = useSendTxn();
 
-  const validateAddress = (address: string) => {
-    return isAddress(address);
-  };
-
-  const handleSend = () => {
+  const handleSend = async () => {
+    if (!fromToken || !toToken) return;
     if (!recipient.trim()) {
       setError("Please enter a recipient address");
       return;
@@ -31,7 +30,12 @@ export default function SendScreen() {
     }
 
     setError("");
-    router.push("/transaction");
+    const hash = await sendToken({
+      recipient,
+      receiveAmount,
+      sendAmount: payAmount,
+    });
+    router.push(`/transaction?chainId=${fromToken.chainId}&hash=${hash}`);
   };
 
   return (
