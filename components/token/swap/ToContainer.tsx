@@ -1,28 +1,36 @@
 import { useFormStore } from "@/store/form";
+import { QuoteResponse } from "@/types/quotes/response";
+import { formatAndTrimUnits } from "@/utils/general/formatter";
+import { joinStrings } from "@/utils/string/join";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import TokenSelection from "../TokenSelection";
 
 const ToContainer = ({
-  receiveAmount,
-  setReceiveAmount,
+  buildTxnData,
   title,
+  isQuoteLoading,
+  quoteResponse,
 }: {
+  isQuoteLoading: boolean;
+  buildTxnData: () => void;
   title: string;
-  receiveAmount: string;
-  setReceiveAmount: (val: string) => void;
+  quoteResponse?: QuoteResponse;
 }) => {
-  const { to: toToken } = useFormStore();
+  const { to: toToken, setToToken } = useFormStore();
   return (
     <View style={styles.swapBox}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.inputRow}>
         <TextInput
           style={styles.amountInput}
-          value={receiveAmount}
-          onChangeText={setReceiveAmount}
+          value={toToken.amount}
+          onChangeText={(val) => {
+            setToToken({ ...toToken, amount: val });
+          }}
           placeholder="0"
+          onBlur={buildTxnData}
           placeholderTextColor="#666"
           keyboardType="decimal-pad"
         />
@@ -31,7 +39,18 @@ const ToContainer = ({
           onPress={() => router.push("/tokens/to")}
         />
       </View>
-      <Text style={styles.dollarValue}>$0</Text>
+      {isQuoteLoading ? (
+        <Text style={styles.dollarValue}>Loading..</Text>
+      ) : toToken.assets &&
+        quoteResponse?.to[
+          joinStrings(toToken.assets.chainId, toToken.assets.address)
+        ] ? (
+        <Text style={styles.dollarValue}>
+          $Dollar Value
+        </Text>
+      ) : (
+        <Text style={styles.dollarValue}>$0</Text>
+      )}
     </View>
   );
 };

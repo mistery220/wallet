@@ -1,4 +1,5 @@
 import { useFormStore } from "@/store/form";
+import { QuoteResponse } from "@/types/quotes/response";
 import { formatAndTrimUnits } from "@/utils/general/formatter";
 import { router } from "expo-router";
 import React from "react";
@@ -6,21 +7,24 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import TokenSelection from "../TokenSelection";
 
 const FromContainer = ({
-  payAmount,
-  setPayAmount,
+  buildTxnData,
 }: {
-  payAmount: string;
-  setPayAmount: (val: string) => void;
+  isQuoteLoading: boolean;
+  buildTxnData: () => void;
+  quoteResponse?: QuoteResponse;
 }) => {
-  const { from: fromToken } = useFormStore();
+  const { from: fromToken, setFromToken } = useFormStore();
   return (
     <View style={styles.swapBox}>
       <Text style={styles.sectionTitle}>You Pay</Text>
       <View style={styles.inputRow}>
         <TextInput
           style={styles.amountInput}
-          value={payAmount}
-          onChangeText={setPayAmount}
+          value={fromToken.amount}
+          onChangeText={(val) => {
+            setFromToken({ ...fromToken, amount: val });
+          }}
+          onBlur={buildTxnData}
           placeholder="0"
           placeholderTextColor="#666"
           keyboardType="decimal-pad"
@@ -34,10 +38,13 @@ const FromContainer = ({
         <View>
           <Text style={styles.dollarValue}>$0</Text>
         </View>
-        {fromToken && (
+        {fromToken.assets && (
           <View style={styles.rateRow}>
             <Text style={styles.rateNumber}>
-              {formatAndTrimUnits(fromToken.bal, fromToken.decimals)}
+              {formatAndTrimUnits(
+                fromToken.assets.bal,
+                fromToken.assets.decimals
+              )}
             </Text>
             <Pressable style={styles.rateButton}>
               <Text style={styles.rateText}>50%</Text>

@@ -1,4 +1,4 @@
-import { Token } from "@/types/token";
+import { FormToken } from "@/types/token/form";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -9,17 +9,17 @@ const TokenSelection = ({
   token,
 }: {
   onPress: () => void;
-  token?: Token;
+  token?: FormToken;
 }) => {
   return (
     <Pressable
       style={[styles.selectionButton, !token && styles.emptySelection]}
       onPress={onPress}
     >
-      {token ? (
+      {token?.assets ? (
         <View style={styles.tokenContainer}>
-          <CustomImg uri={token.logo} style={styles.tokenImage} />
-          <Text style={styles.selectionButtonText}>{token.symbol}</Text>
+          <CustomImg uri={token.assets.logo} style={styles.tokenImage} />
+          <Text style={styles.selectionButtonText}>{token.assets.symbol}</Text>
           <AntDesign name="down" size={12} color="#999" />
         </View>
       ) : (

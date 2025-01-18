@@ -1,5 +1,5 @@
 import { DEFAULT_DECIMAL_TRIM } from "@/constants/general/trim";
-import { formatUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 export const formatAndTrimUnits = (
   val: bigint | string,
@@ -14,8 +14,10 @@ export const trimUnits = (
   val: number | string,
   units: number = DEFAULT_DECIMAL_TRIM
 ) => {
-  const parsedNum = parseFloat(val.toString());
+  const parsedNum = Number(val);
   return parsedNum.toFixed(units);
 };
 
-export const formatPrice = () => {};
+export const trimAndParseUnits = (amount: string, decimals: number) => {
+  return parseUnits(trimUnits(amount, decimals), decimals);
+};

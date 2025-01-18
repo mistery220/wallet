@@ -24,7 +24,7 @@ export default function ToTokenSelection() {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSelectToken = (token: Token) => {
-    setToToken(token);
+    setToToken({ assets: token, amount: "" });
     router.back();
   };
 

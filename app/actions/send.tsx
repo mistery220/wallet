@@ -1,7 +1,9 @@
 import FromContainer from "@/components/token/swap/FromContainer";
 import ToContainer from "@/components/token/swap/ToContainer";
+import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
 import useSendTxn from "@/hooks/txn/send/useSendTxn";
 import { useFormStore } from "@/store/form";
+import { CompleteFormToken } from "@/types/token/form";
 import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -9,16 +11,32 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function SendScreen() {
-  const [payAmount, setPayAmount] = useState("");
-  const [receiveAmount, setReceiveAmount] = useState("");
   const { from: fromToken, to: toToken } = useFormStore();
   const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
   const { sendToken } = useSendTxn();
+  const { buildTxnData, quoteResponse, isQuoteLoading } = useBuildTxnData();
+
+  async function txnBuilder() {
+    buildTxnData({
+      from: fromToken as CompleteFormToken,
+      recipient,
+      to: toToken as CompleteFormToken,
+    });
+  }
 
   const handleSend = async () => {
-    if (!fromToken || !toToken) return;
+    // @TODO upate this to a function and use in button disable also.
+    if (
+      !fromToken.assets ||
+      !fromToken.amount ||
+      !toToken.amount ||
+      !toToken.assets ||
+      !quoteResponse
+    )
+      return;
     if (!recipient.trim()) {
       setError("Please enter a recipient address");
       return;
@@ -30,19 +48,21 @@ export default function SendScreen() {
     }
 
     setError("");
-    const hash = await sendToken({
-      recipient,
-      receiveAmount,
-      sendAmount: payAmount,
-    });
-    router.push(`/transaction?chainId=${fromToken.chainId}&hash=${hash}`);
+    const hash = await sendToken(quoteResponse);
+    router.push(
+      `/transaction?chainId=${fromToken.assets.chainId}&hash=${hash}`
+    );
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         {/* You Pay Section */}
-        <FromContainer payAmount={payAmount} setPayAmount={setPayAmount} />
+        <FromContainer
+          quoteResponse={quoteResponse}
+          buildTxnData={txnBuilder}
+          isQuoteLoading={isQuoteLoading}
+        />
 
         {/* Swap Icon */}
         <View style={styles.swapIconContainer}>
@@ -53,9 +73,10 @@ export default function SendScreen() {
 
         {/* You Receive Section */}
         <ToContainer
+          isQuoteLoading={isQuoteLoading}
+          buildTxnData={txnBuilder}
+          quoteResponse={quoteResponse}
           title="Recipient Receives"
-          receiveAmount={receiveAmount}
-          setReceiveAmount={setReceiveAmount}
         />
 
         {/* Recipient Address */}
