@@ -21,6 +21,7 @@ export default function useBuildTxnData() {
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false);
   const { active } = useCurrentStore();
   const { setToToken, setFromToken } = useFormStore();
+  console.log({ quoteResponse, isQuoteLoading });
   async function buildValidatedTxnData({
     from,
     recipient,
@@ -69,15 +70,12 @@ export default function useBuildTxnData() {
       },
     };
     console.log({ quoteRequest });
-    try {
-      const quoteRes = await axios.post(
-        "https://77bd-103-176-11-113.ngrok-free.app/swap/quote",
-        quoteRequest
-      );
-      return quoteRes.data as QuoteResponse;
-    } catch (e) {
-      console.log({ e });
-    }
+
+    const quoteRes = await axios.post(
+      `${process.env.EXPO_PUBLIC_SERVER}/swap/quote`,
+      quoteRequest
+    );
+    return quoteRes.data as QuoteResponse;
   }
 
   async function buildTxnData({
@@ -93,18 +91,22 @@ export default function useBuildTxnData() {
     if (!isQuoteLoading && from.assets && to.assets) {
       setIsQuoteLoading(true);
       setQuoteResponse(undefined);
-      const quotesRes = await buildValidatedTxnData({
-        from: from as CompleteFormToken,
-        recipient,
-        to: to as CompleteFormToken,
-      });
-      setToToken({
-        ...to,
-        amount:
-          quoteResponse?.to[joinStrings(to.assets.chainId, to.assets.address)]
-            .amount || "",
-      });
-      setQuoteResponse(quotesRes);
+      try {
+        const quotesRes = await buildValidatedTxnData({
+          from: from as CompleteFormToken,
+          recipient,
+          to: to as CompleteFormToken,
+        });
+        setToToken({
+          ...to,
+          amount:
+            quoteResponse?.to[joinStrings(to.assets.chainId, to.assets.address)]
+              .amount || "",
+        });
+        setQuoteResponse(quotesRes);
+      } catch (e) {
+        console.log({ e });
+      }
       setIsQuoteLoading(false);
     }
   }

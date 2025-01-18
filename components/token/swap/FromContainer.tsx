@@ -1,6 +1,7 @@
 import { useFormStore } from "@/store/form";
 import { QuoteResponse } from "@/types/quotes/response";
 import { formatAndTrimUnits } from "@/utils/general/formatter";
+import { getInputFontSize } from "@/utils/styles/input";
 import { router } from "expo-router";
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
@@ -19,7 +20,12 @@ const FromContainer = ({
       <Text style={styles.sectionTitle}>You Pay</Text>
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.amountInput}
+          style={[
+            styles.amountInput,
+            {
+              fontSize: getInputFontSize(fromToken.amount),
+            },
+          ]}
           value={fromToken.amount}
           onChangeText={(val) => {
             setFromToken({ ...fromToken, amount: val });
@@ -81,8 +87,8 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1,
     color: "white",
-    fontSize: 24,
     fontWeight: "600",
+    minHeight: 60,
   },
   detailsRow: {
     flexDirection: "row",

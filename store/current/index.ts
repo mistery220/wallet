@@ -8,8 +8,8 @@ import { CurrentStore } from "../../types/store/current";
 export const useCurrentStore = create<CurrentStore>()(
   persist(
     (set) => ({
-      wallet: { accounts: [], id: "" },
-      chainId: 1,
+      wallet: { accounts: [], id: "", isPhrase: true },
+      chainId: 42161,
       active: { address: "", name: "", id: "" },
       setWallet: (wallet: Wallet) => set({ wallet }),
       setChainId: (chainId: number) => set({ chainId }),

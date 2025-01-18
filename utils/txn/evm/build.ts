@@ -1,5 +1,6 @@
 import { TokenRes } from "@/types/quotes/token";
 import { CompleteFormToken } from "@/types/token/form";
+import { trimAndParseUnits } from "@/utils/general/formatter";
 import { joinStrings } from "@/utils/string/join";
 import { getTokenAddress } from "@/utils/tokens/address";
 
@@ -15,7 +16,10 @@ export const modifyTokenFormat = (
       [tokenKey]: {
         chainId,
         address: tokenAddress,
-        amount: token.amount,
+        amount: trimAndParseUnits(
+          token.amount,
+          token.assets.decimals
+        ).toString(),
       },
     };
   }, {} as TokenRes);

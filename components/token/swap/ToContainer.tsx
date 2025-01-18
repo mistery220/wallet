@@ -1,7 +1,7 @@
+import { Skeleton } from "@/components/skeleton/Skeleton";
 import { useFormStore } from "@/store/form";
 import { QuoteResponse } from "@/types/quotes/response";
-import { formatAndTrimUnits } from "@/utils/general/formatter";
-import { joinStrings } from "@/utils/string/join";
+import { getInputFontSize } from "@/utils/styles/input";
 import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -24,7 +24,12 @@ const ToContainer = ({
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.amountInput}
+          style={[
+            styles.amountInput,
+            {
+              fontSize: getInputFontSize(toToken.amount),
+            },
+          ]}
           value={toToken.amount}
           onChangeText={(val) => {
             setToToken({ ...toToken, amount: val });
@@ -40,16 +45,9 @@ const ToContainer = ({
         />
       </View>
       {isQuoteLoading ? (
-        <Text style={styles.dollarValue}>Loading..</Text>
-      ) : toToken.assets &&
-        quoteResponse?.to[
-          joinStrings(toToken.assets.chainId, toToken.assets.address)
-        ] ? (
-        <Text style={styles.dollarValue}>
-          $Dollar Value
-        </Text>
+        <Skeleton width={80} height={24} borderRadius={4} />
       ) : (
-        <Text style={styles.dollarValue}>$0</Text>
+        <Text style={styles.dollarValue}>${toToken.amount ?? "0"}</Text>
       )}
     </View>
   );
@@ -79,6 +77,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 24,
     fontWeight: "600",
+    minHeight: 60,
   },
   dollarValue: {
     color: "#666",

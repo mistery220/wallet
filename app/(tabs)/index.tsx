@@ -4,6 +4,7 @@ import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
+import { trimUnits } from "@/utils/general/formatter";
 import { joinStrings } from "@/utils/string/join";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -46,28 +47,23 @@ const Profile = () => {
   }, []);
 
   // Calculate total balance
-  const totalBalance = useMemo(() => {
+  const { totalBalance, sortedTokens } = useMemo(() => {
     let total = 0;
-    Object.values(userTokens).forEach((chainTokens) => {
-      Object.values(chainTokens).forEach((token) => {
-        if (token.usd) {
-          const balance = parseFloat(token.bal) / Math.pow(10, token.decimals);
-          total += balance * parseFloat(token.usd);
-        }
-      });
-    });
-    return total;
-  }, [userTokens]);
-
-  // Create sorted array of all tokens
-  const sortedTokens = useMemo(() => {
     const allTokens: (Token & { dollarValue?: number })[] = [];
+
     Object.entries(userTokens).forEach(([chainId, tokensMap]) => {
       Object.values(tokensMap).forEach((token) => {
         const balance = Number(formatUnits(BigInt(token.bal), token.decimals));
         const dollarValue = token.usd
           ? balance * parseFloat(token.usd)
           : undefined;
+
+        // Add to total balance if token has USD value
+        if (dollarValue) {
+          total += dollarValue;
+        }
+
+        // Add to tokens array
         allTokens.push({
           ...token,
           dollarValue,
@@ -76,20 +72,20 @@ const Profile = () => {
       });
     });
 
-    return allTokens.sort((a, b) => {
-      // If both tokens have dollar values, sort by value
+    // Sort tokens
+    const sorted = allTokens.sort((a, b) => {
       if (a.dollarValue !== undefined && b.dollarValue !== undefined) {
         return b.dollarValue - a.dollarValue;
       }
-      // If only one token has a dollar value, prioritize it
       if (a.dollarValue !== undefined) return -1;
       if (b.dollarValue !== undefined) return 1;
-      // If neither has a dollar value, sort by balance
       return (
         parseFloat(b.bal) / Math.pow(10, b.decimals) -
         parseFloat(a.bal) / Math.pow(10, a.decimals)
       );
     });
+
+    return { totalBalance: total, sortedTokens: sorted };
   }, [userTokens]);
 
   const onRefresh = useCallback(async () => {
@@ -145,12 +141,7 @@ const Profile = () => {
       >
         <View style={styles.accountSection}>
           <Text style={styles.accountName}>{active.name}</Text>
-          <Text style={styles.balance}>
-            $
-            {totalBalance.toLocaleString(undefined, {
-              maximumFractionDigits: 2,
-            })}
-          </Text>
+          <Text style={styles.balance}>${trimUnits(totalBalance)}</Text>
           <Text style={styles.balanceSubtext}>Total Balance</Text>
         </View>
 
