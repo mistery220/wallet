@@ -8,7 +8,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function TransactionScreen() {
   const { chains } = useChainsStore();
-  const [status, setStatus] = useState<TxnStatus>(TxnStatus.Processing); // 'processing', 'success', 'failed'
+  const [status, setStatus] = useState<TxnStatus>(TxnStatus.Processing);
   const router = useRouter();
   const { hash, chainId } = useLocalSearchParams();
   const { waitForTransaction } = useTxn();
@@ -35,7 +35,9 @@ export default function TransactionScreen() {
       case TxnStatus.Processing:
         return (
           <>
-            <View style={styles.iconContainer}>Processing...</View>
+            <View style={styles.iconContainer}>
+              <Text>Processing...</Text>
+            </View>
             <Text style={styles.title}>Transacting...</Text>
             <Text style={styles.subtitle}>
               POL will be deposited into your wallet{"\n"}once the transaction
@@ -85,7 +87,7 @@ export default function TransactionScreen() {
       </View>
       <TouchableOpacity
         style={styles.closeButton}
-        onPress={() => router.push("/actions/send")}
+        onPress={() => router.replace("/(tabs)")}
       >
         <Text style={styles.closeButtonText}>Close</Text>
       </TouchableOpacity>

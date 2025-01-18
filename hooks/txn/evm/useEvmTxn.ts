@@ -14,10 +14,12 @@ export default function useEvmTxn() {
     chainId,
     data,
     toAddress,
+    amount = 0n,
   }: {
     chainId: number;
     data: string;
     toAddress: string;
+    amount?: bigint;
   }) {
     try {
       const decodedKey = await EncryptedStore.decryptAndRetrieve(
@@ -30,11 +32,11 @@ export default function useEvmTxn() {
           transport: http(),
           chain: viemChainsById[chainId],
         });
-        // console.log({ walletClient, account: accountFromPrivKey });
         const hash = await walletClient.sendTransaction({
           account: accountFromPrivKey,
           data: data as HexString,
           to: toAddress as HexString,
+          value: amount,
         });
         return hash;
       }

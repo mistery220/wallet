@@ -11,15 +11,17 @@ export default function useTxn() {
     chainId,
     data,
     toAddress,
+    amount
   }: {
     chainId: number;
     data: string;
     toAddress: string;
+    amount?: bigint;
   }) {
     const network = chains[chainId].type;
     switch (network) {
       case Networks.EVM: {
-        return await sendEvmTransaction({ chainId, data, toAddress });
+        return await sendEvmTransaction({ chainId, data, toAddress, amount });
       }
       //   case Networks.SVM: {
       //     return await sendSvmTransaction({data});

@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/skeleton/Skeleton";
+import { InputSrc } from "@/enums/form/input";
 import { useFormStore } from "@/store/form";
 import { QuoteResponse } from "@/types/quotes/response";
 import { getInputFontSize } from "@/utils/styles/input";
@@ -11,14 +12,13 @@ const ToContainer = ({
   buildTxnData,
   title,
   isQuoteLoading,
-  quoteResponse,
 }: {
   isQuoteLoading: boolean;
   buildTxnData: () => void;
   title: string;
   quoteResponse?: QuoteResponse;
 }) => {
-  const { to: toToken, setToToken } = useFormStore();
+  const { to: toToken, setToToken, setInputSrc } = useFormStore();
   return (
     <View style={styles.swapBox}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -32,6 +32,7 @@ const ToContainer = ({
           ]}
           value={toToken.amount}
           onChangeText={(val) => {
+            setInputSrc(InputSrc.To);
             setToToken({ ...toToken, amount: val });
           }}
           placeholder="0"
@@ -47,7 +48,9 @@ const ToContainer = ({
       {isQuoteLoading ? (
         <Skeleton width={80} height={24} borderRadius={4} />
       ) : (
-        <Text style={styles.dollarValue}>${toToken.amount ?? "0"}</Text>
+        <Text style={styles.dollarValue}>
+          ${toToken.amount.length ? toToken.amount : "0"}
+        </Text>
       )}
     </View>
   );

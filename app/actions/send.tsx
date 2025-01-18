@@ -3,12 +3,19 @@ import ToContainer from "@/components/token/swap/ToContainer";
 import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
 import useSendTxn from "@/hooks/txn/send/useSendTxn";
 import { useFormStore } from "@/store/form";
-import { CompleteFormToken } from "@/types/token/form";
 import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 export default function SendScreen() {
   const { from: fromToken, to: toToken } = useFormStore();
@@ -21,9 +28,9 @@ export default function SendScreen() {
 
   async function txnBuilder() {
     buildTxnData({
-      from: fromToken as CompleteFormToken,
+      from: fromToken,
       recipient,
-      to: toToken as CompleteFormToken,
+      to: toToken,
     });
   }
 
@@ -55,59 +62,61 @@ export default function SendScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {/* You Pay Section */}
-        <FromContainer
-          quoteResponse={quoteResponse}
-          buildTxnData={txnBuilder}
-          isQuoteLoading={isQuoteLoading}
-        />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          {/* You Pay Section */}
+          <FromContainer
+            quoteResponse={quoteResponse}
+            buildTxnData={txnBuilder}
+            isQuoteLoading={isQuoteLoading}
+          />
 
-        {/* Swap Icon */}
-        <View style={styles.swapIconContainer}>
-          <Pressable style={styles.swapButton}>
-            <AntDesign name="swap" size={24} color="#fff" />
+          {/* Swap Icon */}
+          <View style={styles.swapIconContainer}>
+            <Pressable style={styles.swapButton}>
+              <AntDesign name="swap" size={24} color="#fff" />
+            </Pressable>
+          </View>
+
+          {/* You Receive Section */}
+          <ToContainer
+            isQuoteLoading={isQuoteLoading}
+            buildTxnData={txnBuilder}
+            quoteResponse={quoteResponse}
+            title="Recipient Receives"
+          />
+
+          {/* Recipient Address */}
+          <View style={styles.recipientContainer}>
+            <TextInput
+              style={styles.recipientInput}
+              placeholder="Recipient Address"
+              placeholderTextColor="#666"
+              value={recipient}
+              onChangeText={(text) => {
+                setRecipient(text);
+                setError("");
+              }}
+            />
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <Pressable
+            style={[
+              styles.sendButton,
+              (!recipient || !fromToken || !toToken) && styles.disabledButton,
+            ]}
+            onPress={handleSend}
+            disabled={!recipient || !fromToken || !toToken}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
           </Pressable>
         </View>
-
-        {/* You Receive Section */}
-        <ToContainer
-          isQuoteLoading={isQuoteLoading}
-          buildTxnData={txnBuilder}
-          quoteResponse={quoteResponse}
-          title="Recipient Receives"
-        />
-
-        {/* Recipient Address */}
-        <View style={styles.recipientContainer}>
-          <TextInput
-            style={styles.recipientInput}
-            placeholder="Recipient Address"
-            placeholderTextColor="#666"
-            value={recipient}
-            onChangeText={(text) => {
-              setRecipient(text);
-              setError("");
-            }}
-          />
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        </View>
       </View>
-
-      <View style={styles.footer}>
-        <Pressable
-          style={[
-            styles.sendButton,
-            (!recipient || !fromToken || !toToken) && styles.disabledButton,
-          ]}
-          onPress={handleSend}
-          disabled={!recipient || !fromToken || !toToken}
-        >
-          <Text style={styles.sendButtonText}>Send</Text>
-        </Pressable>
-      </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

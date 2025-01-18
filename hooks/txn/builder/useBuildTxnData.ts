@@ -1,15 +1,18 @@
 import { erc20Abi } from "@/default-objects/artifacts/erc20Abi";
+import { InputSrc } from "@/enums/form/input";
 import { Erc20Methods } from "@/enums/txn/evm";
+import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useFormStore } from "@/store/form";
 import { HexString } from "@/types/address/evm";
 import { QuoteRequest } from "@/types/quotes/request";
 import { QuoteResponse } from "@/types/quotes/response";
 import { CompleteFormToken, FormToken } from "@/types/token/form";
+import { isValidRecipient } from "@/utils/form/recipient";
 import { trimAndParseUnits } from "@/utils/general/formatter";
 import { joinStrings } from "@/utils/string/join";
 import { isNativeCurrency, isToAndFromSame } from "@/utils/tokens/address";
-import { modifyTokenFormat } from "@/utils/txn/evm/build";
+import { buildSameTransferQuoteToken } from "@/utils/txn/build";
 import axios from "axios";
 import { useState } from "react";
 import { encodeFunctionData } from "viem";
@@ -20,8 +23,9 @@ export default function useBuildTxnData() {
   >();
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false);
   const { active } = useCurrentStore();
-  const { setToToken, setFromToken } = useFormStore();
-  console.log({ quoteResponse, isQuoteLoading });
+  const { chains } = useChainsStore();
+  const { setToToken, setFromToken, inputSrc } = useFormStore();
+
   async function buildValidatedTxnData({
     from,
     recipient,
@@ -31,27 +35,51 @@ export default function useBuildTxnData() {
     to: CompleteFormToken;
     recipient: string;
   }) {
+    const network = chains[from.assets.chainId].type;
+    console.log({ inputSrc });
     if (isToAndFromSame(from.assets, to.assets)) {
       const sendVal = trimAndParseUnits(from.amount, from.assets.decimals);
       if (isNativeCurrency(from.assets.address)) {
         return {
-          from: modifyTokenFormat(from.assets.chainId, [from]),
+          from: buildSameTransferQuoteToken({
+            fromToken: from,
+            inputSrc,
+            toToken: to,
+            updateType: InputSrc.From,
+          }),
           data: "",
           provider: "",
-          to: modifyTokenFormat(to.assets.chainId, [to]),
+          to: buildSameTransferQuoteToken({
+            fromToken: from,
+            inputSrc,
+            toToken: to,
+            updateType: InputSrc.To,
+          }),
           toAddress: recipient,
         };
       } else {
-        const encodedData = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: Erc20Methods.Transfer,
-          args: [recipient as HexString, sendVal],
-        });
+        let encodedData = isValidRecipient(recipient, network)
+          ? encodeFunctionData({
+              abi: erc20Abi,
+              functionName: Erc20Methods.Transfer,
+              args: [recipient as HexString, sendVal],
+            })
+          : "";
         return {
-          from: modifyTokenFormat(from.assets.chainId, [from]),
+          from: buildSameTransferQuoteToken({
+            fromToken: from,
+            inputSrc,
+            toToken: to,
+            updateType: InputSrc.From,
+          }),
           data: encodedData,
           provider: "",
-          to: modifyTokenFormat(to.assets.chainId, [to]),
+          to: buildSameTransferQuoteToken({
+            fromToken: from,
+            inputSrc,
+            toToken: to,
+            updateType: InputSrc.To,
+          }),
           toAddress: to.assets.address,
         };
       }
@@ -92,18 +120,28 @@ export default function useBuildTxnData() {
       setIsQuoteLoading(true);
       setQuoteResponse(undefined);
       try {
-        const quotesRes = await buildValidatedTxnData({
+        const quoteRes = await buildValidatedTxnData({
           from: from as CompleteFormToken,
           recipient,
           to: to as CompleteFormToken,
         });
-        setToToken({
-          ...to,
-          amount:
-            quoteResponse?.to[joinStrings(to.assets.chainId, to.assets.address)]
-              .amount || "",
-        });
-        setQuoteResponse(quotesRes);
+        if (inputSrc === InputSrc.From) {
+          setToToken({
+            ...to,
+            amount:
+              quoteRes?.to[joinStrings(to.assets.chainId, to.assets.address)]
+                .amount || "",
+          });
+        } else {
+          setFromToken({
+            ...from,
+            amount:
+              quoteRes?.from[
+                joinStrings(from.assets.chainId, from.assets.address)
+              ].amount || "",
+          });
+        }
+        setQuoteResponse(quoteRes);
       } catch (e) {
         console.log({ e });
       }

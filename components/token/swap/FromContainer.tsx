@@ -1,3 +1,4 @@
+import { InputSrc } from "@/enums/form/input";
 import { useFormStore } from "@/store/form";
 import { QuoteResponse } from "@/types/quotes/response";
 import { formatAndTrimUnits } from "@/utils/general/formatter";
@@ -14,7 +15,7 @@ const FromContainer = ({
   buildTxnData: () => void;
   quoteResponse?: QuoteResponse;
 }) => {
-  const { from: fromToken, setFromToken } = useFormStore();
+  const { from: fromToken, setFromToken, setInputSrc } = useFormStore();
   return (
     <View style={styles.swapBox}>
       <Text style={styles.sectionTitle}>You Pay</Text>
@@ -28,6 +29,7 @@ const FromContainer = ({
           ]}
           value={fromToken.amount}
           onChangeText={(val) => {
+            setInputSrc(InputSrc.From);
             setFromToken({ ...fromToken, amount: val });
           }}
           onBlur={buildTxnData}
