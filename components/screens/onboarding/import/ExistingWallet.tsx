@@ -1,6 +1,4 @@
 import useKeys from "@/hooks/wallet/useKeys";
-import { useCurrentStore } from "@/store/current";
-import { useWalletStore } from "@/store/wallets";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as bip39 from "bip39";
 import * as Clipboard from "expo-clipboard";
@@ -28,10 +26,6 @@ const words = new Set(bip39.wordlists.english);
 const ExistingWallet: React.FC = () => {
   const { saveWalletAndProtectKeys } = useKeys();
   const navigation = useNavigationContainerRef();
-
-  // hooks
-  const { addNewWallet } = useWalletStore();
-  const { setActiveAccount, setWallet } = useCurrentStore();
 
   // states
   const [selectedLength, setSelectedLength] = useState<PhraseLength | null>(
@@ -102,7 +96,7 @@ const ExistingWallet: React.FC = () => {
       setInvalidIndices(invalidWords);
     } else {
       const mnemonic = phrases.join(" ");
-      await saveWalletAndProtectKeys(mnemonic);
+      await saveWalletAndProtectKeys(mnemonic, 0);
       navigation.reset({
         routes: [{ name: "(tabs)" }],
       });

@@ -1,7 +1,6 @@
 import Header from "@/components/tabs/main/Header";
 import UserTokenListItem from "@/components/token/UserTokenListItem";
 import useTokenBalance from "@/hooks/balance/useBalance";
-import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
@@ -37,14 +36,12 @@ const ActionButton: React.FC<{
 );
 
 const Profile = () => {
-  const { active } = useCurrentStore();
-  const chains = useChainsStore((state) => state.chains);
+  const { activeId, accounts } = useCurrentStore();
   const userTokens = useUserTokensStore((state) => state.tokens);
   const [refreshing, setRefreshing] = useState(false);
   const { fetchTokenBalance } = useTokenBalance();
-
   useEffect(() => {
-    fetchTokenBalance({ account: active });
+    fetchTokenBalance({ account: accounts[activeId] });
   }, []);
 
   // Calculate total balance
@@ -93,7 +90,7 @@ const Profile = () => {
     try {
       if (!refreshing) {
         setRefreshing(true);
-        await fetchTokenBalance({ account: active });
+        await fetchTokenBalance({ account: accounts[activeId] });
       }
     } finally {
       setRefreshing(false);
@@ -117,7 +114,7 @@ const Profile = () => {
         }
       >
         <View style={styles.accountSection}>
-          <Text style={styles.accountName}>{active.name}</Text>
+          <Text style={styles.accountName}>{accounts[activeId].name}</Text>
           <Text style={styles.balance}>${trimUnits(totalBalance)}</Text>
           <Text style={styles.balanceSubtext}>Total Balance</Text>
         </View>

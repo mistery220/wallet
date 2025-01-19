@@ -1,20 +1,22 @@
 import EncryptedStore from "@/encryption/EncryptedStore";
 import { Networks } from "@/enums/network/ecosystem";
 import { useCurrentStore } from "@/store/current";
-import { useWalletStore } from "@/store/wallets";
-import { Account } from "@/types/wallet/account";
 import { joinStrings } from "@/utils/string/join";
 import { Keypair } from "@solana/web3.js";
-import { mnemonicToSeedSync } from "bip39";
+import * as bip39 from "bip39";
 import bs58 from "bs58";
-import ed25519HdKey from "ed25519-hd-key";
+import { HDKey } from "micro-ed25519-hdkey";
 import { toHex } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
-export default function useKeys() {
-  const { setActiveAccount, setWallet } = useCurrentStore();
-  const { addNewWallet } = useWalletStore();
 
-  async function getAccountsAndStoreKey(mnemonic: string, index: number) {
+export default function useKeys() {
+  const { addAndSetNewAccount } = useCurrentStore();
+
+  async function getAccountsAndStoreKey(
+    mnemonic: string,
+    index: number,
+    walletId: string
+  ) {
     const accountId = new Date().getTime().toString();
     const addresses: Record<Networks, string> = {} as Record<Networks, string>;
     for (const network of Object.values(Networks)) {
@@ -33,41 +35,45 @@ export default function useKeys() {
         );
         addresses[network] = account.address;
       } else if (network === Networks.SVM) {
-        const seed = mnemonicToSeedSync(mnemonic);
-        const derivedPath = "m/44'/501'/" + index + "'/0'";
-        const derivedSeed = ed25519HdKey.derivePath(
-          derivedPath,
-          seed.toString("hex")
-        ).key;
-        const keypair = Keypair.fromSeed(derivedSeed);
-        await EncryptedStore.encryptAndStore(
-          joinStrings(accountId, network),
-          bs58.encode(keypair.secretKey),
-          "1234"
-        );
-        addresses[network] = keypair.publicKey.toBase58();
+        try {
+          const seed = bip39.mnemonicToSeedSync(mnemonic, "");
+          const hd = HDKey.fromMasterSeed(seed.toString("hex"));
+
+          const path = `m/44'/501'/${index}'/0'`;
+          const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
+          const privKeyBase58 = bs58.encode(keypair.secretKey);
+          await EncryptedStore.encryptAndStore(
+            joinStrings(accountId, network),
+            privKeyBase58,
+            "1234"
+          );
+          addresses[network] = keypair.publicKey.toBase58();
+        } catch (e) {
+          console.log({ e });
+          throw new Error();
+        }
       }
     }
     const acc = {
       address: addresses,
       name: "Account 1",
       id: accountId,
+      walletId,
+      isPhrase: true,
+      networks: Object.values(Networks),
     };
-    setActiveAccount(acc);
+    addAndSetNewAccount(acc);
     return acc;
   }
 
-  async function saveWalletAndProtectKeys(mnemonic: string) {
-    const acc = await getAccountsAndStoreKey(mnemonic, 0);
-
-    const accounts: Account[] = [acc];
+  async function saveWalletAndProtectKeys(mnemonic: string, index: number) {
     const walletId = new Date().getTime().toString();
-    const newWallet = { accounts, id: walletId, isPhrase: true };
+    const acc = await getAccountsAndStoreKey(mnemonic, index, walletId);
+
+    const newWallet = { accounts: [acc], id: walletId, isPhrase: true };
+
     // @TODO add password from user
     await EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
-    addNewWallet(newWallet);
-
-    setWallet(newWallet);
   }
   return { getAccountsAndStoreKey, saveWalletAndProtectKeys };
 }

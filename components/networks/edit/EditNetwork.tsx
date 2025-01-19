@@ -1,7 +1,6 @@
 import { useChainsStore } from "@/store/chains";
 import { ChainData } from "@/types/network";
 import { MaterialIcons } from "@expo/vector-icons";
-import { JsonRpcProvider } from "ethers";
 import { useState } from "react";
 import {
   Modal,
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { createPublicClient, http } from "viem";
 
 type EditableField = {
   label: string;
@@ -58,11 +58,11 @@ export default function EditNetworkModal({
     }
 
     try {
-      const provider = new JsonRpcProvider(editedValues.rpcUrls[0], undefined, {
-        staticNetwork: true,
+      const publicClient = createPublicClient({
+        transport: http(editedValues.rpcUrls[0]),
       });
-      const chainDetails = await provider.getNetwork();
-      if (Number(chainDetails.chainId.toString()) === selectedChain.chainId) {
+      const chainId = await publicClient.getChainId();
+      if (chainId === selectedChain.chainId) {
         return true;
       }
       return false;

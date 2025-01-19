@@ -1,9 +1,7 @@
-import { useWalletStore } from "@/store/wallets";
-import { Wallet } from "@/types/wallet";
-import { Account } from "@/types/wallet/account";
+import { useCurrentStore } from "@/store/current";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   Platform,
   SafeAreaView,
@@ -15,98 +13,80 @@ import {
   View,
 } from "react-native";
 
-interface WalletGroupProps {
-  wallet: Wallet;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onSelectAccount: (account: Account) => void;
-}
+const ManageAccountsScreen = () => {
+  const { accounts } = useCurrentStore();
 
-const WalletGroup: React.FC<WalletGroupProps> = ({
-  wallet,
-  isExpanded,
-  onToggle,
-  onSelectAccount,
-}) => (
-  <View style={styles.walletContainer}>
-    <TouchableOpacity onPress={onToggle} style={styles.walletHeader}>
-      <View style={styles.walletInfo}>
-        <MaterialIcons
-          name={wallet.isPhrase ? "account-balance-wallet" : "key"}
-          size={24}
-          color="#999"
-        />
-        <Text style={styles.walletTitle}>
-          {wallet.isPhrase ? "Recovery Phrase" : "Private Key"} Wallet
-        </Text>
-      </View>
-      <MaterialIcons
-        name={isExpanded ? "expand-less" : "expand-more"}
-        size={24}
-        color="#999"
-      />
-    </TouchableOpacity>
-
-    {isExpanded && (
-      <View style={styles.accountsList}>
-        {wallet.accounts.map((account) => (
-          <TouchableOpacity
-            key={account.id}
-            style={styles.accountItem}
-            onPress={() => onSelectAccount(account)}
-          >
-            <View style={styles.accountInfo}>
-              <Text style={styles.accountName}>{account.name}</Text>
-              <Text style={styles.accountAddress}>
-                {/* @TODO update this to make it like array of accounts only */}
-                {`${account.address["evm"].slice(0, 6)}...${account.address[
-                  "evm"
-                ].slice(-4)}`}
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={20} color="#666" />
-          </TouchableOpacity>
-        ))}
-      </View>
-    )}
-  </View>
-);
-
-const WalletsScreen = () => {
-  const { wallets } = useWalletStore();
-  const [expandedWallets, setExpandedWallets] = useState<Set<string>>(
-    new Set()
-  );
-
-  const handleWalletToggle = (walletId: string) => {
-    setExpandedWallets((prev) => {
-      const next = new Set(prev);
-      if (next.has(walletId)) {
-        next.delete(walletId);
-      } else {
-        next.add(walletId);
-      }
-      return next;
-    });
+  const handleBack = () => {
+    router.back();
   };
 
-  const handleSelectAccount = (walletId: string) => {
-    router.push(`/wallets/view-key?walletId=${walletId}`);
+  const handleAddWallet = () => {
+    // @TODO add wallet addition handling
+    // router.push("/wallets/add");
+  };
+
+  const handleAccountOptions = (accountId: string) => {
+    router.push(`/accounts?accountId=${accountId}`);
+  };
+
+  const getAccountInitials = (name: string) => {
+    if (name === "Rekt Key") return "R";
+    const match = name.match(/Account (\d+)/);
+    return match ? `A${match[1]}` : name.charAt(0);
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
+          <MaterialIcons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Manage Accounts</Text>
+        <TouchableOpacity onPress={handleAddWallet} style={styles.headerButton}>
+          <MaterialIcons name="add" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView style={styles.content}>
-        {wallets.map((wallet) => (
-          <WalletGroup
-            key={wallet.id}
-            wallet={wallet}
-            isExpanded={expandedWallets.has(wallet.id)}
-            onToggle={() => handleWalletToggle(wallet.id)}
-            onSelectAccount={() => handleSelectAccount(wallet.id)}
-          />
+        {Object.values(accounts).map((account) => (
+          <TouchableOpacity
+            key={account.id}
+            style={styles.accountCard}
+            onPress={() => handleAccountOptions(account.id)}
+          >
+            <View style={styles.accountInfo}>
+              <View style={styles.accountIcon}>
+                <Text style={styles.accountInitials}>
+                  {getAccountInitials(account.name)}
+                </Text>
+              </View>
+              <Text style={styles.accountName}>{account.name}</Text>
+            </View>
+            <View style={styles.accountActions}>
+              {/* // @TODO add user portfolio balance */}
+              {/* {account.balance && (
+                <Text style={styles.accountBalance}>
+                  ${Number(account.balance).toFixed(2)}
+                </Text>
+              )} */}
+              <TouchableOpacity
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MaterialIcons name="more-vert" size={24} color="#999" />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.addWalletButton}
+          onPress={handleAddWallet}
+        >
+          <Text style={styles.addWalletButtonText}>Add / Connect Wallet</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -131,63 +111,73 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
   },
-  backButton: {
+  headerButton: {
     padding: 8,
-  },
-  addButton: {
-    padding: 8,
+    minWidth: 40,
+    alignItems: "center",
   },
   content: {
     flex: 1,
   },
-  walletContainer: {
-    marginHorizontal: 16,
-    marginVertical: 8,
-    backgroundColor: "#333",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  walletHeader: {
+  accountCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
+    backgroundColor: "#333",
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 12,
   },
-  walletInfo: {
+  accountInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    flex: 1,
   },
-  walletTitle: {
+  accountIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#444",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  accountInitials: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
   },
-  accountsList: {
-    borderTopWidth: 1,
-    borderTopColor: "#444",
-  },
-  accountItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
-  },
-  accountInfo: {
-    flex: 1,
-  },
   accountName: {
     color: "white",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "500",
-    marginBottom: 4,
   },
-  accountAddress: {
+  accountActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  accountBalance: {
     color: "#999",
-    fontSize: 12,
+    fontSize: 16,
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#333",
+  },
+  addWalletButton: {
+    backgroundColor: "#333",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  addWalletButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 
-export default WalletsScreen;
+export default ManageAccountsScreen;

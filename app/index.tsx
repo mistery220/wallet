@@ -1,10 +1,10 @@
-import { useWalletStore } from "@/store/wallets";
+import { useCurrentStore } from "@/store/current";
 import { Redirect } from "expo-router";
 import React from "react";
 
 const MainPage = () => {
-  const { wallets } = useWalletStore();
-  if (wallets.length) {
+  const { activeId } = useCurrentStore();
+  if (activeId.length) {
     return <Redirect href="/(tabs)" />;
   } else {
     return <Redirect href="/onboard" />;

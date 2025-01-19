@@ -1,14 +1,16 @@
 import EncryptedStore from "@/encryption/EncryptedStore";
+import { Networks } from "@/enums/network/ecosystem";
 import { TxnStatus } from "@/enums/status/txn";
 import usePublicClient from "@/hooks/clients/usePublicClient";
 import { useCurrentStore } from "@/store/current";
 import { HexString } from "@/types/address/evm";
 import { viemChainsById } from "@/utils/client/evm/chains";
+import { joinStrings } from "@/utils/string/join";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 export default function useEvmTxn() {
-  const { active } = useCurrentStore();
+  const { activeId, accounts } = useCurrentStore();
   const { getEvmPublicClient } = usePublicClient();
   async function sendEvmTransaction({
     chainId,
@@ -23,7 +25,7 @@ export default function useEvmTxn() {
   }) {
     try {
       const decodedKey = await EncryptedStore.decryptAndRetrieve(
-        active.id,
+        joinStrings(activeId, Networks.EVM),
         "1234"
       );
       if (decodedKey) {

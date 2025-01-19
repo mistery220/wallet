@@ -5,27 +5,18 @@ import { Account } from "@/types/wallet/account";
 import { getUnmarshalBalanceUrl } from "@/utils/unmarshal/api";
 import { formatUnmarshalResponse } from "@/utils/unmarshal/modify";
 
-type BalanceParams = {
-  address: string;
-  chainId: number;
-};
-
-type TokenBalance = {
-  contract_address: string;
-  balance: string;
-  token_name: string;
-  token_symbol: string;
-  logo_url?: string;
-  decimals: number;
-  chain_id: number;
-};
-
 export default function useTokenBalance() {
   const { setTokens } = useUserTokensStore();
   const { chains } = useChainsStore();
   const { tokens } = useUserTokensStore();
 
-  async function fetchAllBalance({ address, chainId }: BalanceParams) {
+  async function fetchAllBalance({
+    address,
+    chainId,
+  }: {
+    address: string;
+    chainId: number;
+  }) {
     try {
       const chainName = chains[chainId].name;
       const url = getUnmarshalBalanceUrl({
@@ -38,10 +29,10 @@ export default function useTokenBalance() {
 
       const response = await fetch(url);
       const data = await response.json();
-      const formattedRespone = formatUnmarshalResponse(
-        chains[chainId].type,
-        data.assets
-      );
+      console.log(data.assets);
+      const formattedRespone = data.assets
+        ? formatUnmarshalResponse(chains[chainId].type, data.assets)
+        : [];
       return {
         chainId,
         balances: formattedRespone,

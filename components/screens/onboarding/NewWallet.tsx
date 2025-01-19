@@ -1,6 +1,5 @@
 import useKeys from "@/hooks/wallet/useKeys";
 import { useCurrentStore } from "@/store/current";
-import { useWalletStore } from "@/store/wallets";
 import { AntDesign } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useNavigationContainerRef } from "expo-router";
@@ -11,8 +10,6 @@ import { english, generateMnemonic } from "viem/accounts";
 const NewSeedPhraseScreen = () => {
   const { saveWalletAndProtectKeys } = useKeys();
   const navigation = useNavigationContainerRef();
-  const { addNewWallet } = useWalletStore();
-  const { setActiveAccount, setWallet } = useCurrentStore();
   const [copiedText, setCopiedText] = useState("");
   const [mnemonic] = useState(() => generateMnemonic(english));
 
@@ -34,7 +31,7 @@ const NewSeedPhraseScreen = () => {
         {
           text: "Yes, continue",
           onPress: async () => {
-            await saveWalletAndProtectKeys(mnemonic);
+            await saveWalletAndProtectKeys(mnemonic, 0);
             navigation.reset({
               routes: [{ name: "(tabs)" }],
             });
@@ -42,7 +39,7 @@ const NewSeedPhraseScreen = () => {
         },
       ]
     );
-  }, [mnemonic, addNewWallet, setActiveAccount, setWallet, navigation]);
+  }, [mnemonic, navigation]);
 
   return (
     <View style={styles.container}>

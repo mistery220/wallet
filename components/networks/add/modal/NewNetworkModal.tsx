@@ -2,7 +2,6 @@ import { NetworkCategory } from "@/enums/network/chains";
 import { Networks } from "@/enums/network/ecosystem";
 import { useChainsStore } from "@/store/chains";
 import { ChainData } from "@/types/network";
-import { JsonRpcProvider } from "ethers";
 import { X } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
@@ -18,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { createPublicClient, http } from "viem";
 
 interface NetworkModalProps {
   visible: boolean;
@@ -108,15 +108,14 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
     }
 
     try {
-      const provider = new JsonRpcProvider(url, undefined, {
-        staticNetwork: true,
+      const publicClient = createPublicClient({
+        transport: http(url),
       });
-      const chainDetails = await provider.getNetwork();
-      const chainIdStr = chainDetails.chainId.toString();
+      const chainId = await publicClient.getChainId();
 
       setNetworkDetails((prev) => ({
         ...prev,
-        chainId: chainIdStr,
+        chainId: chainId.toString(),
       }));
       setIsDataValid(true);
     } catch (e) {

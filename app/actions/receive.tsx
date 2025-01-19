@@ -21,7 +21,8 @@ interface Network {
 }
 
 const NetworkItem = ({ chain }: { chain: ChainData }) => {
-  const { active } = useCurrentStore();
+  const { activeId, accounts } = useCurrentStore();
+  const active = accounts[activeId];
   const handleCopy = (): void => {
     // Implement copy functionality
     console.log("Copying address:", active.address[chain.type]);
@@ -57,8 +58,6 @@ const NetworkItem = ({ chain }: { chain: ChainData }) => {
 
 const ReceiveScreen: React.FC = () => {
   const { chains } = useChainsStore();
-  const { active } = useCurrentStore();
-
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Your Addresses</Text>

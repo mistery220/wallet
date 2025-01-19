@@ -12,8 +12,8 @@ import {
 } from "react-native";
 
 const Header = () => {
-  const { active } = useCurrentStore();
-
+  const { activeId, accounts } = useCurrentStore();
+  const active = accounts[activeId];
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
