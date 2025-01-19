@@ -11,6 +11,7 @@ type FormActions = {
   setToToken: (tokens: FormToken) => void;
   setFromToken: (token: FormToken) => void;
   setInputSrc: (src: InputSrc) => void;
+  interchangeFormTokens: () => void;
 };
 
 export type FormStore = FormState & FormActions;

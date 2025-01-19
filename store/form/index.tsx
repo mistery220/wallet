@@ -9,5 +9,10 @@ export const useFormStore = create<FormStore>()((set) => ({
   inputSrc: InputSrc.From,
   setFromToken: (token: FormToken) => set({ from: token }),
   setToToken: (token: FormToken) => set({ to: token }),
+  interchangeFormTokens: () =>
+    set((state) => ({
+      to: { ...state.from, amount: "" },
+      from: { ...state.to, amount: state.from.amount },
+    })),
   setInputSrc: (val: InputSrc) => set({ inputSrc: val }),
 }));

@@ -18,7 +18,11 @@ import {
 } from "react-native";
 
 export default function SendScreen() {
-  const { from: fromToken, to: toToken } = useFormStore();
+  const {
+    from: fromToken,
+    to: toToken,
+    interchangeFormTokens,
+  } = useFormStore();
   const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -74,7 +78,10 @@ export default function SendScreen() {
 
           {/* Swap Icon */}
           <View style={styles.swapIconContainer}>
-            <Pressable style={styles.swapButton}>
+            <Pressable
+              onPress={interchangeFormTokens}
+              style={styles.swapButton}
+            >
               <AntDesign name="swap" size={24} color="#fff" />
             </Pressable>
           </View>
