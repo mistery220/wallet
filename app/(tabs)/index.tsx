@@ -1,3 +1,4 @@
+import Header from "@/components/tabs/main/Header";
 import UserTokenListItem from "@/components/token/UserTokenListItem";
 import useTokenBalance from "@/hooks/balance/useBalance";
 import { useChainsStore } from "@/store/chains";
@@ -43,7 +44,7 @@ const Profile = () => {
   const { fetchTokenBalance } = useTokenBalance();
 
   useEffect(() => {
-    fetchTokenBalance({ address: active.address });
+    fetchTokenBalance({ account: active });
   }, []);
 
   // Calculate total balance
@@ -92,7 +93,7 @@ const Profile = () => {
     try {
       if (!refreshing) {
         setRefreshing(true);
-        await fetchTokenBalance({ address: active.address });
+        await fetchTokenBalance({ account: active });
       }
     } finally {
       setRefreshing(false);
@@ -101,31 +102,7 @@ const Profile = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity
-            style={styles.networkIndicator}
-            onPress={() => router.push("/networks")}
-          >
-            <View style={styles.networkDot} />
-            <Text style={styles.networkText}>Mainnet</Text>
-            <MaterialIcons name="keyboard-arrow-down" size={16} color="#999" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.walletsButton}
-            onPress={() => router.push("/wallets")}
-          >
-            <MaterialIcons
-              name="account-balance-wallet"
-              size={16}
-              color="#999"
-            />
-            <Text style={styles.walletsText}>Wallets</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
+      <Header />
       <ScrollView
         style={styles.content}
         showsVerticalScrollIndicator={false}

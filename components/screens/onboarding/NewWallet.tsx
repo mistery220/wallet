@@ -1,16 +1,15 @@
-import EncryptedStore from "@/encryption/EncryptedStore";
+import useKeys from "@/hooks/wallet/useKeys";
 import { useCurrentStore } from "@/store/current";
 import { useWalletStore } from "@/store/wallets";
-import { Account } from "@/types/wallet/account";
 import { AntDesign } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useNavigationContainerRef } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { toHex } from "viem";
-import { english, generateMnemonic, mnemonicToAccount } from "viem/accounts";
+import { english, generateMnemonic } from "viem/accounts";
 
 const NewSeedPhraseScreen = () => {
+  const { saveWalletAndProtectKeys } = useKeys();
   const navigation = useNavigationContainerRef();
   const { addNewWallet } = useWalletStore();
   const { setActiveAccount, setWallet } = useCurrentStore();
@@ -35,34 +34,7 @@ const NewSeedPhraseScreen = () => {
         {
           text: "Yes, continue",
           onPress: async () => {
-            const account = mnemonicToAccount(mnemonic, {
-              accountIndex: 0,
-              addressIndex: 0,
-            });
-            const acc = {
-              address: account.address,
-              name: "Account 1",
-              id: account.address,
-            };
-            const accounts: Account[] = [acc];
-            const walletId = new Date().getTime().toString();
-            const privKey = account.getHdKey().privateKey as Uint8Array<ArrayBufferLike>;
-            const privKeyBytes = toHex(privKey);
-            const newWallet = { accounts, id: walletId, isPhrase: true };
-            // @TODO add password from user
-            await EncryptedStore.encryptAndStore(
-              newWallet.id,
-              mnemonic,
-              "1234"
-            );
-            await EncryptedStore.encryptAndStore(
-              acc.id,
-              privKeyBytes,
-              "1234"
-            );
-            addNewWallet(newWallet);
-            setActiveAccount(acc);
-            setWallet(newWallet);
+            await saveWalletAndProtectKeys(mnemonic);
             navigation.reset({
               routes: [{ name: "(tabs)" }],
             });

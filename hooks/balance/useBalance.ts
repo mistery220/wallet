@@ -1,6 +1,7 @@
 import { useChainsStore } from "@/store/chains";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { ChainTokenMap, TokenMap } from "@/types/token";
+import { Account } from "@/types/wallet/account";
 import { getUnmarshalBalanceUrl } from "@/utils/unmarshal/api";
 import { formatUnmarshalResponse } from "@/utils/unmarshal/modify";
 
@@ -54,14 +55,17 @@ export default function useTokenBalance() {
     }
   }
 
-  async function fetchTokenBalance({ address }: { address: string }) {
+  async function fetchTokenBalance({ account }: { account: Account }) {
     try {
       // Get all chain IDs from the chains object
       const chainIds = Object.keys(chains).map(Number);
 
       // Fetch balances for all chains in parallel
       const balancePromises = chainIds.map((chainId) =>
-        fetchAllBalance({ address, chainId })
+        fetchAllBalance({
+          address: account.address[chains[chainId].type],
+          chainId,
+        })
       );
 
       const results = await Promise.all(balancePromises);

@@ -58,9 +58,10 @@ const WalletGroup: React.FC<WalletGroupProps> = ({
             <View style={styles.accountInfo}>
               <Text style={styles.accountName}>{account.name}</Text>
               <Text style={styles.accountAddress}>
-                {`${account.address.slice(0, 6)}...${account.address.slice(
-                  -4
-                )}`}
+                {/* @TODO update this to make it like array of accounts only */}
+                {`${account.address["evm"].slice(0, 6)}...${account.address[
+                  "evm"
+                ].slice(-4)}`}
               </Text>
             </View>
             <MaterialIcons name="chevron-right" size={20} color="#666" />

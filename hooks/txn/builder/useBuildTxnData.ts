@@ -90,7 +90,7 @@ export default function useBuildTxnData() {
         amount: trimAndParseUnits(from.amount, from.assets.decimals).toString(),
       },
       recipient,
-      sender: active.address,
+      sender: active.address[network],
       slippage: 1,
       to: {
         ...to,
