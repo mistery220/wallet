@@ -29,7 +29,6 @@ export default function useTokenBalance() {
 
       const response = await fetch(url);
       const data = await response.json();
-      console.log(data.assets);
       const formattedRespone = data.assets
         ? formatUnmarshalResponse(chains[chainId].type, data.assets)
         : [];
