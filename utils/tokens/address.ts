@@ -1,12 +1,12 @@
-import { nativeAddresses, nativeCurrency } from "@/constants/address/native";
+import { lowercasedNativeAddresses, nativeCurrency } from "@/constants/address/native";
 import { Token } from "@/types/token";
 import { isAddress } from "viem";
 
 export const getTokenAddress = (address: string) => {
-  if (nativeAddresses.includes(address.toLowerCase())) {
+  if (lowercasedNativeAddresses.includes(address.toLowerCase())) {
     return nativeCurrency;
   }
-  return address.toLowerCase();
+  return address;
 };
 
 export const validateAddress = (address: string) => {

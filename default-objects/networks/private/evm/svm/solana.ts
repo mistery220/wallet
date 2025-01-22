@@ -10,6 +10,6 @@ export const solanaConfig: ChainData = {
   chainId: 7_565_164,
   category: NetworkCategory.DEFAULT,
   logo: "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/solana.svg",
-  rpcUrls: ["https://api.mainnet-beta.solana.com"],
+  rpcUrls: [`https://mainnet.helius-rpc.com/?api-key=${process.env.EXPO_PUBLIC_HELIUS_API_KEY}`],
   blockExplorerUrl: "https://solscan.io",
 };
