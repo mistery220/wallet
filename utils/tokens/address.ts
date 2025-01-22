@@ -1,5 +1,10 @@
-import { lowercasedNativeAddresses, nativeCurrency } from "@/constants/address/native";
+import {
+  lowercasedNativeAddresses,
+  nativeCurrency,
+} from "@/constants/address/native";
+import { Networks } from "@/enums/network/ecosystem";
 import { Token } from "@/types/token";
+import { PublicKey } from "@solana/web3.js";
 import { isAddress } from "viem";
 
 export const getTokenAddress = (address: string) => {
@@ -9,8 +14,16 @@ export const getTokenAddress = (address: string) => {
   return address;
 };
 
-export const validateAddress = (address: string) => {
-  return isAddress(address);
+export const validateAddress = (address: string, network: Networks) => {
+  switch (network) {
+    case Networks.EVM:
+      return isAddress(address);
+    case Networks.SVM: {
+      const pubKey = new PublicKey(address);
+      return PublicKey.isOnCurve(pubKey);
+    }
+  }
+  return false;
 };
 
 export const isToAndFromSame = (from: Token, to: Token) => {

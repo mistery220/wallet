@@ -2,6 +2,7 @@ import FromContainer from "@/components/token/swap/FromContainer";
 import ToContainer from "@/components/token/swap/ToContainer";
 import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
 import useSendTxn from "@/hooks/txn/send/useSendTxn";
+import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
@@ -23,6 +24,8 @@ export default function SendScreen() {
     to: toToken,
     interchangeFormTokens,
   } = useFormStore();
+  const { chains } = useChainsStore();
+
   const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -53,7 +56,7 @@ export default function SendScreen() {
       return;
     }
 
-    if (!validateAddress(recipient)) {
+    if (!validateAddress(recipient, chains[fromToken.assets.chainId].type)) {
       setError("Please enter a valid Ethereum address");
       return;
     }

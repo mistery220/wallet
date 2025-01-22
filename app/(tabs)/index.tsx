@@ -6,6 +6,7 @@ import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";
 import { trimUnits } from "@/utils/general/formatter";
 import { joinStrings } from "@/utils/string/join";
+import { calcDollarValue } from "@/utils/tokens/balance";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -20,7 +21,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { formatUnits } from "viem";
 
 const ActionButton: React.FC<{
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -51,10 +51,11 @@ const Profile = () => {
 
     Object.entries(userTokens).forEach(([chainId, tokensMap]) => {
       Object.values(tokensMap).forEach((token) => {
-        const balance = Number(formatUnits(BigInt(token.bal), token.decimals));
-        const dollarValue = token.usd
-          ? balance * parseFloat(token.usd)
-          : undefined;
+        const dollarValue = calcDollarValue({
+          balance: token.bal,
+          decimals: token.decimals,
+          usdPrice: token.usd,
+        });
 
         // Add to total balance if token has USD value
         if (dollarValue) {
@@ -125,11 +126,11 @@ const Profile = () => {
             label="Send"
             onPress={() => router.push("/actions/send")}
           />
-          <ActionButton
+          {/* <ActionButton
             onPress={() => router.push("/actions/receive")}
             icon="call-received"
             label="Receive"
-          />
+          /> */}
           <ActionButton icon="payment" label="Request" />
           <ActionButton icon="add-shopping-cart" label="Buy" />
         </View>
@@ -219,8 +220,9 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     paddingHorizontal: 20,
+    gap: 35,
     marginBottom: 32,
   },
   actionButton: {

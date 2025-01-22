@@ -9,7 +9,10 @@ import { QuoteRequest } from "@/types/quotes/request";
 import { QuoteResponse } from "@/types/quotes/response";
 import { CompleteFormToken, FormToken } from "@/types/token/form";
 import { isValidRecipient } from "@/utils/form/recipient";
-import { trimAndParseUnits } from "@/utils/general/formatter";
+import {
+  formatAndTrimUnits,
+  trimAndParseUnits,
+} from "@/utils/general/formatter";
 import { joinStrings } from "@/utils/string/join";
 import { isNativeCurrency, isToAndFromSame } from "@/utils/tokens/address";
 import { buildSameTransferQuoteToken } from "@/utils/txn/build";
@@ -22,7 +25,7 @@ export default function useBuildTxnData() {
     QuoteResponse | undefined
   >();
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false);
-  const { active } = useCurrentStore();
+  const { activeId, accounts } = useCurrentStore();
   const { chains } = useChainsStore();
   const { setToToken, setFromToken, inputSrc } = useFormStore();
 
@@ -36,7 +39,6 @@ export default function useBuildTxnData() {
     recipient: string;
   }) {
     const network = chains[from.assets.chainId].type;
-    console.log({ inputSrc });
     if (isToAndFromSame(from.assets, to.assets)) {
       const sendVal = trimAndParseUnits(from.amount, from.assets.decimals);
       if (isNativeCurrency(from.assets.address)) {
@@ -90,14 +92,14 @@ export default function useBuildTxnData() {
         amount: trimAndParseUnits(from.amount, from.assets.decimals).toString(),
       },
       recipient,
-      sender: active.address[network],
+      sender: accounts[activeId].address[network],
       slippage: 1,
       to: {
         ...to,
         amount: trimAndParseUnits(to.amount, to.assets.decimals).toString(),
       },
+      inputSrc,
     };
-    console.log({ quoteRequest });
 
     const quoteRes = await axios.post(
       `${process.env.EXPO_PUBLIC_SERVER}/swap/quote`,
@@ -129,21 +131,29 @@ export default function useBuildTxnData() {
           setToToken({
             ...to,
             amount:
-              quoteRes?.to[joinStrings(to.assets.chainId, to.assets.address)]
-                .amount || "",
+              formatAndTrimUnits(
+                quoteRes?.to[joinStrings(to.assets.chainId, to.assets.address)]
+                  .amount,
+                to.assets.decimals,
+                to.assets.decimals
+              ) || "",
           });
         } else {
           setFromToken({
             ...from,
             amount:
-              quoteRes?.from[
-                joinStrings(from.assets.chainId, from.assets.address)
-              ].amount || "",
+              formatAndTrimUnits(
+                quoteRes?.from[
+                  joinStrings(from.assets.chainId, from.assets.address)
+                ].amount,
+                from.assets.decimals,
+                from.assets.decimals
+              ) || "",
           });
         }
         setQuoteResponse(quoteRes);
       } catch (e) {
-        console.log({ e });
+        console.log("Quote fetching failed: ", { e });
       }
       setIsQuoteLoading(false);
     }

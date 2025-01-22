@@ -9,7 +9,4 @@ export const solanaNativeAddressLowerCase = //unmarshal
 export const solanaNativeAddress = //unmarshal
   "So11111111111111111111111111111111111111112";
 
-export const lowercasedNativeAddresses = [
-  eFormatNativeCurrencyLowerCase,
-  solanaNativeAddressLowerCase,
-];
+export const lowercasedNativeAddresses = [eFormatNativeCurrencyLowerCase];

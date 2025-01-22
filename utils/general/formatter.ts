@@ -6,8 +6,8 @@ export const formatAndTrimUnits = (
   decimals: number,
   units: number = DEFAULT_DECIMAL_TRIM
 ) => {
-  const formattedVal = parseFloat(formatUnits(BigInt(val), decimals));
-  return formattedVal.toFixed(units);
+  const formattedVal = Number(formatUnits(BigInt(val), decimals));
+  return parseFloat(formattedVal.toFixed(units)).toString();
 };
 
 export const trimUnits = (
@@ -15,7 +15,7 @@ export const trimUnits = (
   units: number = DEFAULT_DECIMAL_TRIM
 ) => {
   const parsedNum = Number(val);
-  return parsedNum.toFixed(units);
+  return parseFloat(parsedNum.toFixed(units)).toString();
 };
 
 export const trimAndParseUnits = (amount: string, decimals: number) => {

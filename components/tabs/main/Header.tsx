@@ -30,7 +30,7 @@ const Header = () => {
         {/* Center - Account Name */}
         <TouchableOpacity
           style={styles.accountNameContainer}
-          onPress={() => router.push("/actions/receive")}
+          onPress={() => router.push("/accounts/active")}
         >
           <Text style={styles.accountName}>{active.name}</Text>
         </TouchableOpacity>

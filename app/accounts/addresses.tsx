@@ -35,12 +35,14 @@ const AccountAddressesScreen = () => {
         <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
           <MaterialIcons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Account Addresses</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Account Addresses</Text>
+        </View>
         <View style={styles.headerButton} />
       </View>
 
       <ScrollView style={styles.content}>
-        {account?.networks.map((network) => (
+        {account.networks.map((network) => (
           <View key={network} style={styles.addressCard}>
             <View style={styles.networkHeader}>
               <Text style={styles.networkName}>{network}</Text>
@@ -70,14 +72,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16, // Increased from 12 to 16
     borderBottomWidth: 1,
     borderBottomColor: "#333",
+    marginTop: 8, // Added margin top
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: "center", // Center the title container
+    marginHorizontal: 16, // Add some spacing from the buttons
   },
   headerTitle: {
     color: "white",
     fontSize: 20,
     fontWeight: "600",
+    textAlign: "center", // Ensure text is centered
   },
   headerButton: {
     padding: 8,

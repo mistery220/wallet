@@ -1,18 +1,18 @@
-import { Networks } from "@/enums/network/ecosystem";
+import { ChainData } from "@/types/network";
 import { Token } from "@/types/token";
 import { UnmarshalBalanceResponse } from "@/types/unmarshal/balance";
 import { getTokenAddress } from "../tokens/address";
 
 export const formatUnmarshalResponse = (
-  network: Networks,
+  chainData: ChainData,
   data: UnmarshalBalanceResponse
 ): Token[] => {
   return data.map((item) => ({
     name: item.contract_name,
     symbol: item.contract_ticker_symbol,
     decimals: parseInt(item.contract_decimals, 10),
-    chainId: item.coin, // chainId
-    network,
+    chainId: chainData.chainId,
+    network: chainData.type,
     address: getTokenAddress(item.contract_address),
     logo: item.logo_url,
     usd: item.quote_rate, // price in USD
