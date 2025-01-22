@@ -29,6 +29,7 @@ export default function useTokenBalance() {
 
       const response = await fetch(url);
       const data = await response.json();
+      console.log({ data });
       const formattedRespone = data.assets
         ? formatUnmarshalResponse(chains[chainId].type, data.assets)
         : [];
@@ -77,6 +78,7 @@ export default function useTokenBalance() {
       return tokensByChain;
     } catch (error) {
       console.error("Error fetching token balances:", error);
+      return {};
     }
   }
 

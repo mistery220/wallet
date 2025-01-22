@@ -27,7 +27,7 @@ export default function FromTokenSelection() {
   };
 
   const tokensList = useMemo(() => {
-    return Object.values(tokens[selectedChainId]).sort((a, b) => {
+    return Object.values(tokens[selectedChainId] || {}).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
       const balB = parseFloat(b.bal) || 0;
       return balB - balA;

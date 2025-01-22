@@ -17,7 +17,7 @@ type CustomImgProps = {
   height?: number;
 };
 
-const CustomImg: React.FC<CustomImgProps> = ({
+const ImageComponent: React.FC<CustomImgProps> = ({
   uri,
   style,
   width = 44,
@@ -69,5 +69,9 @@ const CustomImg: React.FC<CustomImgProps> = ({
     />
   );
 };
+
+const CustomImg: React.FC<CustomImgProps> = (props) => (
+  <ImageComponent {...props} key={props.uri} />
+);
 
 export default CustomImg;

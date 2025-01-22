@@ -30,8 +30,8 @@ export default function ToTokenSelection() {
 
   const tokensList = useMemo(() => {
     const updatedTokens = {
-      ...tokens[selectedChainId],
-      ...userTokens[selectedChainId],
+      ...(tokens[selectedChainId] || {}),
+      ...(userTokens[selectedChainId] || {}),
     };
     return Object.values(updatedTokens).sort((a, b) => {
       const balA = parseFloat(a.bal) || 0;
@@ -99,7 +99,7 @@ export default function ToTokenSelection() {
           <TokenListItem handleSelectToken={handleSelectToken} item={item} />
         )}
         estimatedItemSize={88}
-        keyExtractor={(item) => `${item.address}-${item.network}`}
+        keyExtractor={(item) => `${item.address}-${item.chainId}`}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No tokens found</Text>
