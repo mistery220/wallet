@@ -1,3 +1,4 @@
+import { unmarshalChainNames } from "@/constants/address/unmarshal/chains";
 import { useChainsStore } from "@/store/chains";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { ChainTokenMap, TokenMap } from "@/types/token";
@@ -18,7 +19,7 @@ export default function useTokenBalance() {
     chainId: number;
   }) {
     try {
-      const chainName = chains[chainId].name;
+      const chainName = unmarshalChainNames[chainId];
       const url = getUnmarshalBalanceUrl({
         address,
         chainName,
@@ -29,7 +30,7 @@ export default function useTokenBalance() {
 
       const response = await fetch(url);
       const data = await response.json();
-      
+
       const formattedRespone = data.assets
         ? formatUnmarshalResponse(chains[chainId], data.assets)
         : [];

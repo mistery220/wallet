@@ -4,6 +4,7 @@ import { useCurrentStore } from "@/store/current";
 import { ChainData } from "@/types/network";
 import { getEllipsisText } from "@/utils/string/ellipsis";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -70,9 +71,8 @@ const NetworkItem = ({ chain }: { chain: ChainData }) => {
   const active = accounts[activeId];
   const [showQR, setShowQR] = useState(false);
 
-  const handleCopy = (): void => {
-    // Implement copy functionality
-    console.log("Copying address:", active.address[chain.type]);
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(active.address[chain.type]);
   };
 
   return (

@@ -7,9 +7,9 @@ export const solanaConfig: ChainData = {
   name: "solana",
   type: Networks.SVM,
   nativeCurrency: { name: "Solana", symbol: "SOL", decimals: 9 },
-  chainId: 7_565_164,
+  chainId: 1_151_111_081_099_710,
   category: NetworkCategory.DEFAULT,
   logo: "https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/solana.svg",
-  rpcUrls: [`https://mainnet.helius-rpc.com/?api-key=${process.env.EXPO_PUBLIC_HELIUS_API_KEY}`],
+  rpcUrls: [`https://api.mainnet-beta.solana.com`],
   blockExplorerUrl: "https://solscan.io",
 };

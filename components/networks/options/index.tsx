@@ -1,3 +1,5 @@
+import { useChainsStore } from "@/store/chains";
+import { useCurrentStore } from "@/store/current";
 import { ChainData } from "@/types/network";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
@@ -20,6 +22,7 @@ export default function NetworkOptionsModal({
   closeModal: () => void;
   showEditModal: () => void;
 }) {
+  const {deleteChain} = useChainsStore();
   const handleDeleteNetwork = () => {
     Alert.alert(
       "Delete Network",
@@ -33,7 +36,7 @@ export default function NetworkOptionsModal({
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            // deleteChain(selectedChain.chainId);
+            deleteChain(selectedChain.chainId);
             closeModal();
           },
         },

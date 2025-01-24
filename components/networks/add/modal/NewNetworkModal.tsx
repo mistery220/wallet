@@ -3,10 +3,9 @@ import { Networks } from "@/enums/network/ecosystem";
 import { useChainsStore } from "@/store/chains";
 import { ChainData } from "@/types/network";
 import { X } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
-  Keyboard,
-  KeyboardEvent,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -25,7 +24,7 @@ interface NetworkModalProps {
 }
 
 interface NetworkDetails {
-  name: string;
+  displayName: string;
   chainId: string;
   type: Networks;
   nativeCurrency: {
@@ -42,11 +41,10 @@ interface NetworkDetails {
 const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
   const { addNewChain } = useChainsStore();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [currentInputIndex, setCurrentInputIndex] = useState<number>(-1);
 
   const [networkDetails, setNetworkDetails] = useState<NetworkDetails>({
-    name: "",
+    displayName: "",
     chainId: "",
     type: Networks.EVM,
     nativeCurrency: { name: "", symbol: "", decimals: 18 },
@@ -57,54 +55,75 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
   });
 
   const [isDataValid, setIsDataValid] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: string;
+  }>({});
+  const [detectedChainId, setDetectedChainId] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    const keyboardWillShow = (e: KeyboardEvent) => {
-      setKeyboardHeight(e.endCoordinates.height);
-    };
+  const validateForm = useCallback(async () => {
+    const errors: { [key: string]: string } = {};
 
-    const keyboardWillHide = () => {
-      setKeyboardHeight(0);
-      setCurrentInputIndex(-1);
-    };
+    if (!networkDetails.displayName.trim()) {
+      errors.displayName = "Network name is required";
+    }
 
-    const showSubscription = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      keyboardWillShow
-    );
-    const hideSubscription = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      keyboardWillHide
-    );
+    if (!networkDetails.chainId.trim()) {
+      errors.chainId = "Chain ID is required";
+    }
 
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+    if (!networkDetails.nativeCurrency.symbol.trim()) {
+      errors.nativeCurrency = "Currency symbol is required";
+    }
+
+    if (!networkDetails.rpcUrls[0].trim()) {
+      errors.rpcUrl = "RPC URL is required";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [networkDetails]);
 
   const handleInputChange = (
     field: keyof NetworkDetails | "rpcUrl",
     value: string
   ) => {
+    setIsDataValid(true);
     if (field === "rpcUrl") {
       setNetworkDetails((prev) => ({
         ...prev,
         rpcUrls: [value],
       }));
-      validateRpcUrl(value);
+      // Clear any previous detected chain ID and validation state
+      setDetectedChainId(null);
+    } else if (field === "nativeCurrency") {
+      setNetworkDetails((prev) => ({
+        ...prev,
+        nativeCurrency: { ...prev.nativeCurrency, symbol: value },
+      }));
     } else {
       setNetworkDetails((prev) => ({
         ...prev,
         [field]: field === "chainId" ? value.replace(/[^0-9]/g, "") : value,
       }));
     }
+
+    // Clear specific field error when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const validateRpcUrl = async (url: string) => {
     if (!url) {
-      setIsDataValid(false);
-      return;
+      setValidationErrors((prev) => ({
+        ...prev,
+        rpcUrl: "RPC URL is required",
+      }));
+      return false;
     }
 
     try {
@@ -113,34 +132,53 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
       });
       const chainId = await publicClient.getChainId();
 
-      setNetworkDetails((prev) => ({
-        ...prev,
-        chainId: chainId.toString(),
-      }));
+      // If user hasn't entered a chain ID or entered a different one
+      if (
+        !networkDetails.chainId ||
+        Number(networkDetails.chainId) !== chainId
+      ) {
+        setDetectedChainId(chainId.toString());
+        return false;
+      }
+
       setIsDataValid(true);
+      return true;
     } catch (e) {
-      console.log("RPC validation error:", e);
+      setValidationErrors((prev) => ({
+        ...prev,
+        rpcUrl: "Invalid RPC URL. Unable to connect.",
+      }));
       setIsDataValid(false);
+      return false;
     }
   };
 
-  const handleSave = () => {
-    const formattedData: ChainData = {
-      ...networkDetails,
-      displayName: networkDetails.name,
-      chainId: parseInt(networkDetails.chainId, 10),
-    };
-    addNewChain(formattedData);
-    onClose();
+  const handleSave = async () => {
+    const formValidation = await validateForm();
+    const rpcValidation = await validateRpcUrl(networkDetails.rpcUrls[0]);
+
+    if (formValidation && rpcValidation) {
+      const formattedData: ChainData = {
+        ...networkDetails,
+        name: networkDetails.displayName.toLowerCase(),
+        nativeCurrency: {
+          ...networkDetails.nativeCurrency,
+          symbol: networkDetails.nativeCurrency.symbol.toUpperCase(),
+        },
+        chainId: parseInt(networkDetails.chainId, 10),
+      };
+      addNewChain(formattedData);
+      onClose();
+    }
   };
 
   const formFields = [
     {
       label: "Network Name",
-      field: "name" as const,
+      field: "displayName" as const,
       placeholder: "Enter network name",
       keyboardType: "default" as const,
-      value: networkDetails.name,
+      value: networkDetails.displayName,
     },
     {
       label: "Chain ID",
@@ -179,9 +217,12 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
       animationType="slide"
       statusBarTranslucent
     >
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.modalOverlay}
+      >
         <Pressable style={styles.dismissArea} onPress={onClose} />
-        <View style={[styles.editContainer]}>
+        <View style={styles.editContainer}>
           <View style={styles.optionsHeader}>
             <Text style={styles.optionsTitle}>Add New Network</Text>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -194,6 +235,7 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
             style={styles.editFields}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollViewContent}
           >
             {formFields.map((field, index) => (
               <View key={field.field} style={styles.fieldContainer}>
@@ -202,19 +244,28 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
                   style={[
                     styles.input,
                     currentInputIndex === index && styles.focusedInput,
+                    validationErrors[field.field] && styles.errorInput,
                   ]}
                   placeholder={field.placeholder}
                   placeholderTextColor="#666"
                   keyboardType={field.keyboardType}
                   value={field.value}
                   onChangeText={(text) => handleInputChange(field.field, text)}
+                  onFocus={() => setCurrentInputIndex(index)}
+                  onBlur={() => setCurrentInputIndex(-1)}
                 />
-                {field.field === "rpcUrl" && !isDataValid && field.value && (
-                  <Text style={styles.errorText}>Invalid RPC URL</Text>
+                {validationErrors[field.field] && (
+                  <Text style={styles.errorText}>
+                    {validationErrors[field.field]}
+                  </Text>
+                )}
+                {field.field === "rpcUrl" && detectedChainId && (
+                  <Text style={styles.suggestedChainText}>
+                    RPC suggests Chain ID: {detectedChainId}
+                  </Text>
                 )}
               </View>
             ))}
-            <View style={{ height: keyboardHeight + 20 }} />
           </ScrollView>
 
           <View style={styles.actionButtons}>
@@ -228,16 +279,19 @@ const NewNetworkModal: React.FC<NetworkModalProps> = ({ visible, onClose }) => {
               style={[
                 styles.actionButton,
                 styles.saveButton,
-                !isDataValid && styles.disabledButton,
+                (!isDataValid || Object.keys(validationErrors).length > 0) &&
+                  styles.disabledButton,
               ]}
               onPress={handleSave}
-              disabled={!isDataValid}
+              disabled={
+                !isDataValid || Object.keys(validationErrors).length > 0
+              }
             >
               <Text style={styles.actionButtonText}>Add Network</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -256,8 +310,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    overflowY: "scroll",
-    maxHeight: 400,
+    maxHeight: "90%",
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   optionsHeader: {
     flexDirection: "row",
@@ -284,6 +340,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
   },
+  suggestedChainText: {
+    color: "#FFA500", // Orange color to stand out
+    fontSize: 12,
+    marginTop: 4,
+  },
   input: {
     backgroundColor: "#333",
     borderRadius: 12,
@@ -296,6 +357,9 @@ const styles = StyleSheet.create({
   focusedInput: {
     borderColor: "#007AFF",
     backgroundColor: "#3a3a3a",
+  },
+  errorInput: {
+    borderColor: "#ff4444",
   },
   errorText: {
     color: "#ff4444",

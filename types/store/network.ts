@@ -5,4 +5,5 @@ export type ChainsStore = {
   setChains: (chains: Chains) => void;
   addNewChain: (chain: ChainData) => void;
   updateChain: (chain: ChainData) => void;
+  deleteChain: (chainId: number) => void;
 };

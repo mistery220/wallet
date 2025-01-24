@@ -18,6 +18,12 @@ export const useChainsStore = create<ChainsStore>()(
         set((state) => {
           return { chains: { ...state.chains, [chain.chainId]: chain } };
         }),
+      deleteChain: (chainId: number) =>
+        set((state) => {
+          const chains = { ...state.chains };
+          delete chains[chainId];
+          return { chains };
+        }),
     }),
     {
       name: "chains-state-storage",

@@ -1,9 +1,14 @@
 import EncryptedStore from "@/encryption/EncryptedStore";
+import { useChainsStore } from "@/store/chains";
+import { useCurrentStore } from "@/store/current";
+import { ChainData } from "@/types/network";
+import { joinStrings } from "@/utils/string/join";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -16,18 +21,39 @@ import {
 } from "react-native";
 
 const ShowKeyScreen = () => {
-  const { storeName } = useLocalSearchParams();
   const [privateKey, setPrivateKey] = useState<string>("");
   const [isVisible, setIsVisible] = useState(false);
+  const [selectedChain, setSelectedChain] = useState<ChainData | null>(null);
+  const [isChainModalVisible, setIsChainModalVisible] = useState(true);
+
+  const { chains } = useChainsStore();
+  const { accounts, activeId } = useCurrentStore();
+
+  // Filter chains based on the active account's supported networks
+  const supportedChains = useMemo(() => {
+    const activeAccount = accounts[activeId];
+    if (!activeAccount) return [];
+
+    return Object.values(chains).filter((chain) =>
+      activeAccount.networks.includes(chain.type)
+    );
+  }, [chains, accounts, activeId]);
 
   const handleBack = () => {
     router.back();
   };
 
+  const handleSelectChain = (chain: ChainData) => {
+    setSelectedChain(chain);
+    setIsChainModalVisible(false);
+  };
+
   const handleReveal = async () => {
+    if (!selectedChain) return;
+
     try {
       const key = (await EncryptedStore.decryptAndRetrieve(
-        storeName as string,
+        joinStrings(activeId, selectedChain.type),
         "1234"
       )) as string;
       setPrivateKey(key);
@@ -44,13 +70,41 @@ const ShowKeyScreen = () => {
     });
   };
 
+  const ChainSelectionModal = () => (
+    <Modal visible={isChainModalVisible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Select Network</Text>
+          <ScrollView>
+            {supportedChains.map((chain) => (
+              <TouchableOpacity
+                key={chain.chainId}
+                style={styles.chainItem}
+                onPress={() => handleSelectChain(chain)}
+              >
+                <Text style={styles.chainName}>{chain.displayName}</Text>
+                <Text style={styles.chainId}>Chain ID: {chain.chainId}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
+      <ChainSelectionModal />
+
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
           <MaterialIcons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Private Key</Text>
+        <Text style={styles.headerTitle}>
+          {selectedChain
+            ? `Private Key - ${selectedChain.displayName}`
+            : "Private Key"}
+        </Text>
         <TouchableOpacity
           onPress={handleCopy}
           style={styles.headerButton}
@@ -73,7 +127,11 @@ const ShowKeyScreen = () => {
           </Text>
         </View>
 
-        {!isVisible ? (
+        {!selectedChain ? (
+          <Text style={styles.selectChainText}>
+            Please select a network to reveal its private key
+          </Text>
+        ) : !isVisible ? (
           <TouchableOpacity style={styles.revealButton} onPress={handleReveal}>
             <Text style={styles.revealButtonText}>Reveal Private Key</Text>
           </TouchableOpacity>
@@ -182,6 +240,48 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
     fontSize: 14,
     flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "90%",
+    backgroundColor: "#1a1a1a",
+    borderRadius: 12,
+    padding: 20,
+    maxHeight: "70%",
+  },
+  modalTitle: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  chainItem: {
+    backgroundColor: "#333",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 10,
+  },
+  chainName: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  chainId: {
+    color: "#999",
+    fontSize: 14,
+    marginTop: 5,
+  },
+  selectChainText: {
+    color: "#999",
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
   },
 });
 
