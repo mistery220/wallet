@@ -16,7 +16,7 @@ export enum ChainIds {
   Aurora = 1313161554,
   Metis = 1088,
   Sepolia = 11155111,
-  Solana = 7565164,
+  Solana = 1151111081099710,
 }
 
 
