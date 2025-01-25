@@ -1,5 +1,4 @@
 import { erc20Abi } from "@/default-objects/artifacts/erc20Abi";
-import { InputSrc } from "@/enums/form/input";
 import { Erc20Methods } from "@/enums/txn/evm";
 import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
@@ -13,9 +12,9 @@ import {
   formatAndTrimUnits,
   trimAndParseUnits,
 } from "@/utils/general/formatter";
-import { joinStrings } from "@/utils/string/join";
+import { buildErc20QuoteResponse } from "@/utils/quote/static/erc20";
+import { buildNativeQuoteResponse } from "@/utils/quote/static/native";
 import { isNativeCurrency, isToAndFromSame } from "@/utils/tokens/address";
-import { buildSameTransferQuoteToken } from "@/utils/txn/build";
 import axios from "axios";
 import { useState } from "react";
 import { encodeFunctionData } from "viem";
@@ -37,28 +36,12 @@ export default function useBuildTxnData() {
     from: CompleteFormToken;
     to: CompleteFormToken;
     recipient: string;
-  }) {
+  }): Promise<QuoteResponse> {
     const network = chains[from.assets.chainId].type;
     if (isToAndFromSame(from.assets, to.assets)) {
       const sendVal = trimAndParseUnits(from.amount, from.assets.decimals);
       if (isNativeCurrency(from.assets.address)) {
-        return {
-          from: buildSameTransferQuoteToken({
-            fromToken: from,
-            inputSrc,
-            toToken: to,
-            updateType: InputSrc.From,
-          }),
-          data: "",
-          provider: "",
-          to: buildSameTransferQuoteToken({
-            fromToken: from,
-            inputSrc,
-            toToken: to,
-            updateType: InputSrc.To,
-          }),
-          toAddress: recipient,
-        };
+        return buildNativeQuoteResponse(from, to, recipient);
       } else {
         let encodedData = isValidRecipient(recipient, network)
           ? encodeFunctionData({
@@ -67,23 +50,7 @@ export default function useBuildTxnData() {
               args: [recipient as HexString, sendVal],
             })
           : "";
-        return {
-          from: buildSameTransferQuoteToken({
-            fromToken: from,
-            inputSrc,
-            toToken: to,
-            updateType: InputSrc.From,
-          }),
-          data: encodedData,
-          provider: "",
-          to: buildSameTransferQuoteToken({
-            fromToken: from,
-            inputSrc,
-            toToken: to,
-            updateType: InputSrc.To,
-          }),
-          toAddress: to.assets.address,
-        };
+        return buildErc20QuoteResponse(from, to, encodedData);
       }
     }
     const quoteRequest: QuoteRequest = {
@@ -127,30 +94,26 @@ export default function useBuildTxnData() {
           recipient,
           to: to as CompleteFormToken,
         });
-        if (inputSrc === InputSrc.From) {
+        if (quoteRes) {
           setToToken({
             ...to,
-            amount:
-              formatAndTrimUnits(
-                quoteRes?.to[joinStrings(to.assets.chainId, to.assets.address)]
-                  .amount,
-                to.assets.decimals,
-                to.assets.decimals
-              ) || "",
+            amount: formatAndTrimUnits(
+              quoteRes.estimate.toAmount,
+              to.assets.decimals,
+              to.assets.decimals
+            ),
           });
-        } else {
+
           setFromToken({
             ...from,
-            amount:
-              formatAndTrimUnits(
-                quoteRes?.from[
-                  joinStrings(from.assets.chainId, from.assets.address)
-                ].amount,
-                from.assets.decimals,
-                from.assets.decimals
-              ) || "",
+            amount: formatAndTrimUnits(
+              quoteRes.estimate.fromAmount,
+              from.assets.decimals,
+              from.assets.decimals
+            ),
           });
         }
+
         setQuoteResponse(quoteRes);
       } catch (e) {
         console.log("Quote fetching failed: ", { e });

@@ -40,6 +40,7 @@ const Profile = () => {
   const userTokens = useUserTokensStore((state) => state.tokens);
   const [refreshing, setRefreshing] = useState(false);
   const { fetchTokenBalance } = useTokenBalance();
+
   useEffect(() => {
     fetchTokenBalance({ account: accounts[activeId] });
   }, []);
