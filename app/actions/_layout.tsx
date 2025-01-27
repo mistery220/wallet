@@ -10,9 +10,12 @@ const ActionsLayout = () => {
           headerTitle: "Send",
         }}
       />
-      {/* <Stack.Screen name="receive" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen name="request" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen name="buy" options={{ headerShown: false }} /> */}
+      <Stack.Screen
+        name="request"
+        options={{
+          headerTitle: "Request",
+        }}
+      />
     </Stack>
   );
 };

@@ -128,11 +128,15 @@ const Profile = () => {
             onPress={() => router.push("/actions/send")}
           />
           {/* <ActionButton
-            onPress={() => router.push("/actions/receive")}
+            
             icon="call-received"
             label="Receive"
           /> */}
-          <ActionButton icon="payment" label="Request" />
+          <ActionButton
+            onPress={() => router.push("/actions/request")}
+            icon="payment"
+            label="Request"
+          />
           <ActionButton icon="add-shopping-cart" label="Buy" />
         </View>
 
