@@ -26,16 +26,14 @@ export default function useBuildTxnData() {
   const [isQuoteLoading, setIsQuoteLoading] = useState<boolean>(false);
   const { activeId, accounts } = useCurrentStore();
   const { chains } = useChainsStore();
-  const { setToToken, setFromToken, inputSrc } = useFormStore();
+  const { setToToken, setFromToken, inputSrc, recipient } = useFormStore();
 
   async function buildValidatedTxnData({
     from,
-    recipient,
     to,
   }: {
     from: CompleteFormToken;
     to: CompleteFormToken;
-    recipient: string;
   }): Promise<QuoteResponse> {
     const network = chains[from.assets.chainId].type;
     if (isToAndFromSame(from.assets, to.assets)) {
@@ -77,12 +75,10 @@ export default function useBuildTxnData() {
 
   async function buildTxnData({
     from,
-    recipient,
     to,
   }: {
     from: FormToken;
     to: FormToken;
-    recipient: string;
   }) {
     // @TODO add proper validation here
     if (!isQuoteLoading && from.assets && to.assets) {
@@ -91,7 +87,6 @@ export default function useBuildTxnData() {
       try {
         const quoteRes = await buildValidatedTxnData({
           from: from as CompleteFormToken,
-          recipient,
           to: to as CompleteFormToken,
         });
         if (quoteRes) {

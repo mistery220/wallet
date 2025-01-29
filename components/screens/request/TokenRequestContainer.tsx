@@ -1,4 +1,3 @@
-// components/TokenRequestContainer.tsx
 import TokenSelection from "@/components/token/TokenSelection";
 import { InputSrc } from "@/enums/form/input";
 import { useFormStore } from "@/store/form";
@@ -8,7 +7,7 @@ import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 const TokenRequestContainer = () => {
-  const { from: fromToken, setFromToken, setInputSrc } = useFormStore();
+  const { to: toToken, setToToken, setInputSrc } = useFormStore();
 
   return (
     <View style={styles.requestBox}>
@@ -18,29 +17,29 @@ const TokenRequestContainer = () => {
           style={[
             styles.amountInput,
             {
-              fontSize: getInputFontSize(fromToken.amount),
+              fontSize: getInputFontSize(toToken.amount),
             },
           ]}
-          value={fromToken.amount}
+          value={toToken.amount}
           onChangeText={(val) => {
             setInputSrc(InputSrc.From);
-            setFromToken({ ...fromToken, amount: val });
+            setToToken({ ...toToken, amount: val });
           }}
           placeholder="0"
           placeholderTextColor="#666"
           keyboardType="decimal-pad"
         />
         <TokenSelection
-          token={fromToken}
-          onPress={() => router.push("/tokens/from")}
+          token={toToken}
+          onPress={() => router.push("/tokens/to")}
         />
       </View>
       <View style={styles.detailsRow}>
         <View>
           <Text style={styles.dollarValue}>$0</Text>
         </View>
-        {fromToken.assets && (
-          <Text style={styles.tokenSymbol}>{fromToken.assets.symbol}</Text>
+        {toToken.assets && (
+          <Text style={styles.tokenSymbol}>{toToken.assets.symbol}</Text>
         )}
       </View>
     </View>

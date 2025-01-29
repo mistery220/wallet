@@ -6,7 +6,7 @@ import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Keyboard,
@@ -23,10 +23,11 @@ export default function SendScreen() {
     from: fromToken,
     to: toToken,
     interchangeFormTokens,
+    recipient,
+    setRecipient,
   } = useFormStore();
   const { chains } = useChainsStore();
 
-  const [recipient, setRecipient] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -36,7 +37,6 @@ export default function SendScreen() {
   async function txnBuilder() {
     buildTxnData({
       from: fromToken,
-      recipient,
       to: toToken,
     });
   }

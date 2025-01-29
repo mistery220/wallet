@@ -7,6 +7,7 @@ export const useFormStore = create<FormStore>()((set) => ({
   from: { amount: "" },
   to: { amount: "" },
   inputSrc: InputSrc.From,
+  recipient: "",
   setFromToken: (token: FormToken) => set({ from: token }),
   setToToken: (token: FormToken) => set({ to: token }),
   interchangeFormTokens: () =>
@@ -14,5 +15,6 @@ export const useFormStore = create<FormStore>()((set) => ({
       to: { ...state.from, amount: "" },
       from: { ...state.to, amount: state.from.amount },
     })),
-  setInputSrc: (val: InputSrc) => set({ inputSrc: val }),
+  setRecipient: (recipient: string) => set({ recipient }),
+  setInputSrc: (inputSrc: InputSrc) => set({ inputSrc }),
 }));

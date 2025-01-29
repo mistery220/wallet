@@ -6,6 +6,7 @@ import Constants from "expo-constants";
 
 import { Platform } from "react-native";
 import { router } from "expo-router";
+import useNotificationHandler from "./useNotificationHandler";
 
 export interface PushNotificationState {
   expoPushToken?: Notifications.ExpoPushToken;
@@ -13,6 +14,7 @@ export interface PushNotificationState {
 }
 
 export const usePushNotifications = (): PushNotificationState => {
+  const { handleReceive } = useNotificationHandler();
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldPlaySound: false,
@@ -78,14 +80,7 @@ export const usePushNotifications = (): PushNotificationState => {
       });
 
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const data = response.notification.request.content.data;
-        console.log("User responded to notification:", data);
-        if (data?.url) {
-          router.push("/(tabs)");
-          router.replace(data.url);
-        }
-      });
+      Notifications.addNotificationResponseReceivedListener(handleReceive);
 
     return () => {
       Notifications.removeNotificationSubscription(

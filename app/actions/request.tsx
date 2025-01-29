@@ -2,11 +2,12 @@
 import NotificationService from "@/clients/notification/NotificationService";
 import RequestInputContainer from "@/components/screens/request/RequestInputContainer";
 import TokenRequestContainer from "@/components/screens/request/TokenRequestContainer";
+import { Actions } from "@/enums/notification/response";
 import { usePushNotifications } from "@/hooks/notification/usePushNotification";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
+import { RequestActionNotification } from "@/types/notification/actions";
 import { validateAddress } from "@/utils/tokens/address";
-import { Route } from "expo-router";
 import React, { useState } from "react";
 import {
   Keyboard,
@@ -18,7 +19,7 @@ import {
 } from "react-native";
 
 export default function RequestScreen() {
-  const { from: fromToken } = useFormStore();
+  const { to: toToken } = useFormStore();
   const { chains } = useChainsStore();
   const { expoPushToken } = usePushNotifications();
 
@@ -29,10 +30,16 @@ export default function RequestScreen() {
     await NotificationService.sendPushNotification({
       expoPushToken,
       title: "Funds Required",
-      data: { url: "exp://192.168.1.11:8081/--/actions/send" },
+      data: {
+        backRoute: "(tabs)",
+        screenRoute: "exp://192.168.1.11:8081/--/actions/send",
+        toToken: toToken,
+        type: Actions.Request,
+        recipient: requesterAddress,
+      } as RequestActionNotification,
       body: "Request USDC from you",
     });
-    if (!fromToken.assets || !fromToken.amount) {
+    if (!toToken.assets || !toToken.amount) {
       return;
     }
 
@@ -42,7 +49,7 @@ export default function RequestScreen() {
     }
 
     if (
-      !validateAddress(requesterAddress, chains[fromToken.assets.chainId].type)
+      !validateAddress(requesterAddress, chains[toToken.assets.chainId].type)
     ) {
       setError("Please enter a valid address");
       return;
@@ -51,7 +58,7 @@ export default function RequestScreen() {
     setError("");
     // Here you can implement the logic to generate a request link or notification
     // router.push(
-    //   `/request/preview?chainId=${fromToken.assets.chainId}&amount=${fromToken.amount}&address=${requesterAddress}`
+    //   `/request/preview?chainId=${toToken.assets.chainId}&amount=${toToken.amount}&address=${requesterAddress}`
     // );
   };
 
@@ -77,12 +84,12 @@ export default function RequestScreen() {
           <Pressable
             style={[
               styles.requestButton,
-              // (!requesterAddress || !fromToken.amount || !fromToken.assets) &&
+              // (!requesterAddress || !toToken.amount || !toToken.assets) &&
               //   styles.disabledButton,
             ]}
             onPress={handleRequest}
             // disabled={
-            //   !requesterAddress || !fromToken.amount || !fromToken.assets
+            //   !requesterAddress || !toToken.amount || !toToken.assets
             // }
           >
             <Text style={styles.requestButtonText}>Request</Text>
