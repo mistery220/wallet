@@ -1,58 +1,34 @@
-import { NotificationData, PushMessage } from "@/types/notification/push";
-import Constants from "expo-constants";
-import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import * as Device from "expo-device";
+import Constants from "expo-constants";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: true,
-  }),
-});
+interface NotificationData {
+  [key: string]: any;
+}
 
-export class NotificationService {
-  static async registerForPushNotifications(): Promise<
-    Notifications.ExpoPushToken | undefined
-  > {
-    let token: Notifications.ExpoPushToken | undefined;
+interface PushMessage {
+  to: string;
+  sound: string;
+  title: string;
+  body: string;
+  data: NotificationData;
+}
 
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#FF231F7C",
-      });
-    }
-
-    if (Device.isDevice) {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") {
-        console.error("Failed to get push token for push notification!");
-        return;
-      }
-
-      token = await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      });
-    } else {
-      console.warn("Must use physical device for Push Notifications");
-    }
-
-    return token;
+class NotificationService {
+  private static instance: NotificationService;
+  private constructor() {
+    // Private constructor to prevent direct construction calls with 'new'
   }
 
-  static async scheduleLocalNotification(
+  public static getInstance(): NotificationService {
+    if (!NotificationService.instance) {
+      NotificationService.instance = new NotificationService();
+    }
+    return NotificationService.instance;
+  }
+
+  async scheduleLocalNotification(
     title: string,
     body: string,
     trigger?: Notifications.NotificationTriggerInput,
@@ -68,21 +44,28 @@ export class NotificationService {
     });
   }
 
-  static async sendPushNotification(
-    expoPushToken: string,
-    title: string,
-    body: string,
-    data: NotificationData = {}
-  ): Promise<Response> {
+  async sendPushNotification({
+    body,
+    data = {},
+    expoPushToken,
+    title,
+  }: {
+    expoPushToken?: Notifications.ExpoPushToken;
+    title: string;
+    body: string;
+    data?: NotificationData;
+  }): Promise<void> {
+    if (!expoPushToken) return;
+
     const message: PushMessage = {
-      to: expoPushToken,
+      to: expoPushToken.data,
       sound: "default",
       title,
       body,
       data,
     };
 
-    return await fetch("https://exp.host/--/api/v2/push/send", {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -92,16 +75,7 @@ export class NotificationService {
       body: JSON.stringify(message),
     });
   }
-
-  static addNotificationReceivedListener(
-    callback: (notification: Notifications.Notification) => void
-  ): Notifications.Subscription {
-    return Notifications.addNotificationReceivedListener(callback);
-  }
-
-  static addNotificationResponseReceivedListener(
-    callback: (response: Notifications.NotificationResponse) => void
-  ): Notifications.Subscription {
-    return Notifications.addNotificationResponseReceivedListener(callback);
-  }
 }
+
+// Usage example:
+export default NotificationService.getInstance();

@@ -1,4 +1,3 @@
-// components/RequestInputContainer.tsx
 import { Networks } from "@/enums/network/ecosystem";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
@@ -38,8 +37,6 @@ const RequestInputContainer = ({
       return { isValid: true, type: "twitter", exists };
     }
 
-    // Validate as blockchain address
-    // Replace with actual blockchain address validation
     const isValidAddress = true; // Add your address validation logic
     if (isValidAddress) {
       // Mock API call to check if address exists in your app

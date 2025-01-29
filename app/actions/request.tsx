@@ -1,9 +1,12 @@
 // RequestScreen.tsx
+import NotificationService from "@/clients/notification/NotificationService";
 import RequestInputContainer from "@/components/screens/request/RequestInputContainer";
 import TokenRequestContainer from "@/components/screens/request/TokenRequestContainer";
+import { usePushNotifications } from "@/hooks/notification/usePushNotification";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { validateAddress } from "@/utils/tokens/address";
+import { Route } from "expo-router";
 import React, { useState } from "react";
 import {
   Keyboard,
@@ -17,11 +20,18 @@ import {
 export default function RequestScreen() {
   const { from: fromToken } = useFormStore();
   const { chains } = useChainsStore();
+  const { expoPushToken } = usePushNotifications();
 
   const [requesterAddress, setRequesterAddress] = useState("");
   const [error, setError] = useState("");
 
   const handleRequest = async () => {
+    await NotificationService.sendPushNotification({
+      expoPushToken,
+      title: "Funds Required",
+      data: { url: "exp://192.168.1.11:8081/--/actions/send" },
+      body: "Request USDC from you",
+    });
     if (!fromToken.assets || !fromToken.amount) {
       return;
     }
@@ -67,15 +77,15 @@ export default function RequestScreen() {
           <Pressable
             style={[
               styles.requestButton,
-              (!requesterAddress || !fromToken.amount || !fromToken.assets) &&
-                styles.disabledButton,
+              // (!requesterAddress || !fromToken.amount || !fromToken.assets) &&
+              //   styles.disabledButton,
             ]}
             onPress={handleRequest}
-            disabled={
-              !requesterAddress || !fromToken.amount || !fromToken.assets
-            }
+            // disabled={
+            //   !requesterAddress || !fromToken.amount || !fromToken.assets
+            // }
           >
-            <Text style={styles.requestButtonText}>Generate Request</Text>
+            <Text style={styles.requestButtonText}>Request</Text>
           </Pressable>
         </View>
       </View>
