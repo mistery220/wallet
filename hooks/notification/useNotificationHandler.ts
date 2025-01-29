@@ -1,5 +1,5 @@
 import { InputSrc } from "@/enums/form/input";
-import { Actions } from "@/enums/notification/response";
+import { Actions } from "@/enums/actions";
 import { useFormStore } from "@/store/form";
 import { RequestActionNotification } from "@/types/notification/actions";
 import * as Notifications from "expo-notifications";

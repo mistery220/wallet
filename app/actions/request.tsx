@@ -1,13 +1,13 @@
 // RequestScreen.tsx
-import NotificationService from "@/clients/notification/NotificationService";
 import RequestInputContainer from "@/components/screens/request/RequestInputContainer";
 import TokenRequestContainer from "@/components/screens/request/TokenRequestContainer";
-import { Actions } from "@/enums/notification/response";
+import { Actions } from "@/enums/actions";
 import { usePushNotifications } from "@/hooks/notification/usePushNotification";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { RequestActionNotification } from "@/types/notification/actions";
 import { validateAddress } from "@/utils/tokens/address";
+import axios from "axios";
 import React, { useState } from "react";
 import {
   Keyboard,
@@ -22,23 +22,11 @@ export default function RequestScreen() {
   const { to: toToken } = useFormStore();
   const { chains } = useChainsStore();
   const { expoPushToken } = usePushNotifications();
-
+  console.log({ expoPushToken });
   const [requesterAddress, setRequesterAddress] = useState("");
   const [error, setError] = useState("");
 
   const handleRequest = async () => {
-    await NotificationService.sendPushNotification({
-      expoPushToken,
-      title: "Funds Required",
-      data: {
-        backRoute: "(tabs)",
-        screenRoute: "exp://192.168.1.11:8081/--/actions/send",
-        toToken: toToken,
-        type: Actions.Request,
-        recipient: requesterAddress,
-      } as RequestActionNotification,
-      body: "Request USDC from you",
-    });
     if (!toToken.assets || !toToken.amount) {
       return;
     }
@@ -57,9 +45,26 @@ export default function RequestScreen() {
 
     setError("");
     // Here you can implement the logic to generate a request link or notification
-    // router.push(
-    //   `/request/preview?chainId=${toToken.assets.chainId}&amount=${toToken.amount}&address=${requesterAddress}`
-    // );
+    try {
+      // @TODO possibly just get the recipient, expoPushToken from backend
+      // and notify from frontend only
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER}/actions/request`,
+        {
+          title: "Funds Required",
+          data: {
+            backRoute: "(tabs)",
+            screenRoute: "exp://192.168.1.11:8081/--/actions/send",
+            toToken: toToken,
+            type: Actions.Request,
+            recipient: requesterAddress,
+          } as RequestActionNotification,
+          body: "Request USDC from you",
+        }
+      );
+    } catch (e) {
+      console.log({ e });
+    }
   };
 
   return (
@@ -84,13 +89,11 @@ export default function RequestScreen() {
           <Pressable
             style={[
               styles.requestButton,
-              // (!requesterAddress || !toToken.amount || !toToken.assets) &&
-              //   styles.disabledButton,
+              (!requesterAddress || !toToken.amount || !toToken.assets) &&
+                styles.disabledButton,
             ]}
             onPress={handleRequest}
-            // disabled={
-            //   !requesterAddress || !toToken.amount || !toToken.assets
-            // }
+            disabled={!requesterAddress || !toToken.amount || !toToken.assets}
           >
             <Text style={styles.requestButtonText}>Request</Text>
           </Pressable>
