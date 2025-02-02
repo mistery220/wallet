@@ -1,9 +1,8 @@
-import { useEffect } from "react";
-import { Linking, Alert } from "react-native";
 import Axios from "axios";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
-import * as AuthSession from "expo-auth-session";
+import { useEffect } from "react";
+import { Alert, Linking } from "react-native";
 
 const CONSUMER_KEY = process.env.EXPO_PUBLIC_TWITTER_CLIENT_ID as string;
 const CONSUMER_SECRET = process.env.CLIENT_SECRET as string;

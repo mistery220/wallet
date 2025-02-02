@@ -16,7 +16,7 @@ export default function App() {
   const [request, response, promptAsync] = useAuthRequest(
     {
       clientId: process.env.EXPO_PUBLIC_TWITTER_CLIENT_ID as string,
-      redirectUri: "https://auth.expo.io/@brijeshagal/wallet",
+      redirectUri: "https://auth.expo.io/@brijeshagal/app",
       usePKCE: true,
       scopes: ["tweet.read"],
     },
@@ -28,6 +28,8 @@ export default function App() {
       const { code } = response.params;
     }
   }, [response]);
+
+  console.log({ response });
 
   return (
     <Button
