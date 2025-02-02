@@ -54,7 +54,7 @@ export default function RequestScreen() {
           title: "Funds Required",
           data: {
             backRoute: "(tabs)",
-            screenRoute: "exp://192.168.1.11:8081/--/actions/send",
+            screenRoute: "exp://192.168.1.10:8081/--/actions/send",
             toToken: toToken,
             type: Actions.Request,
             recipient: requesterAddress,

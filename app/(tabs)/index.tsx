@@ -138,6 +138,11 @@ const Profile = () => {
             label="Request"
           />
           <ActionButton icon="add-shopping-cart" label="Buy" />
+          <ActionButton
+            onPress={() => router.push("/auth/twitter")}
+            icon="transfer-within-a-station"
+            label=""
+          />
         </View>
 
         <View style={styles.assetsSection}>

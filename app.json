@@ -17,8 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.brijeshagal.app",
-      "googleServicesFile": "./android/app/google-services.json"
+      "package": "com.brijeshagal.app"
     },
     "web": {
       "bundler": "metro",

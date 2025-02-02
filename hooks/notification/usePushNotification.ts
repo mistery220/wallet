@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-
-import Constants from "expo-constants";
-
+import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
-import { router } from "expo-router";
 import useNotificationHandler from "./useNotificationHandler";
 
 export interface PushNotificationState {
