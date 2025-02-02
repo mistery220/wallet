@@ -5,7 +5,7 @@ import { getItemAsync } from "expo-secure-store";
  * @param key - The storage key
  * @returns The encrypted value, or null if not found
  */
-export const getSecureData = async (key: string): Promise<string | null> => {
+export const retrieveSecureData = async (key: string): Promise<string | null> => {
   try {
     const value = await getItemAsync(key);
     return value ? value : null;

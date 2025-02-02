@@ -40,7 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="tokens" options={{ headerShown: false }} />
         <Stack.Screen name="wallets" options={{ headerShown: false }} />
         <Stack.Screen name="accounts" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/twitter" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

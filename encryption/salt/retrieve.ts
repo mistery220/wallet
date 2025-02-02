@@ -1,5 +1,5 @@
-import { getSecureData } from "../storage/retrieve";
+import { retrieveSecureData } from "../storage/retrieve";
 
 export const getSalt = async (storeName: string): Promise<string | null> => {
-  return await getSecureData(storeName);
+  return await retrieveSecureData(storeName);
 };

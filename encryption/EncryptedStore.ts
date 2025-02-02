@@ -5,7 +5,7 @@ import { deriveKey } from "./key/deriveKey";
 import { generateSalt } from "./salt/generate";
 import { getSalt } from "./salt/retrieve";
 import { saveSalt } from "./salt/save";
-import { getSecureData } from "./storage/retrieve";
+import { retrieveSecureData } from "./storage/retrieve";
 import { saveSecureData } from "./storage/save";
 class EncryptedStorage {
   private static instance: EncryptedStorage;
@@ -48,7 +48,7 @@ class EncryptedStorage {
     }
     const key = await deriveKey(password, salt);
 
-    const encryptedKey = await getSecureData(storeName);
+    const encryptedKey = await retrieveSecureData(storeName);
     if (!encryptedKey) {
       throw new Error("Encrypted private key not found.");
     }

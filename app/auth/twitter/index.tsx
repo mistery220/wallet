@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { saveSecureData } from "@/encryption/storage/save";
+import { useAuthRequest } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
-import { Button, Platform } from "react-native";
+import { Button } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -13,23 +13,19 @@ const discovery = {
 };
 
 export default function App() {
-  const [request, response, promptAsync] = useAuthRequest(
+  const [request, , promptAsync] = useAuthRequest(
     {
       clientId: process.env.EXPO_PUBLIC_TWITTER_CLIENT_ID as string,
-      redirectUri: "https://auth.expo.io/@brijeshagal/app",
+      redirectUri: `${process.env.EXPO_PUBLIC_SERVER}/auth/callback`,
       usePKCE: true,
-      scopes: ["tweet.read"],
+      scopes: ["tweet.read", "users.read"],
     },
     discovery
   );
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { code } = response.params;
-    }
-  }, [response]);
-
-  console.log({ response });
+  if (request) {
+    saveSecureData("twitterCodeVerifier", request?.codeVerifier || "");
+  }
 
   return (
     <Button

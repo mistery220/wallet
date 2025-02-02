@@ -36,7 +36,7 @@ const ActionButton: React.FC<{
 );
 
 const Profile = () => {
-  const { activeId, accounts } = useCurrentStore();
+  const { activeId, accounts, twitterUsername } = useCurrentStore();
   const userTokens = useUserTokensStore((state) => state.tokens);
   const [refreshing, setRefreshing] = useState(false);
   const { fetchTokenBalance } = useTokenBalance();
@@ -138,11 +138,13 @@ const Profile = () => {
             label="Request"
           />
           <ActionButton icon="add-shopping-cart" label="Buy" />
-          <ActionButton
-            onPress={() => router.push("/auth/twitter")}
-            icon="transfer-within-a-station"
-            label=""
-          />
+          {!Boolean(twitterUsername) && (
+            <ActionButton
+              onPress={() => router.push("/auth/twitter")}
+              icon="transfer-within-a-station"
+              label=""
+            />
+          )}
         </View>
 
         <View style={styles.assetsSection}>
