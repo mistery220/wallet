@@ -1,8 +1,6 @@
-// RequestScreen.tsx
 import RequestInputContainer from "@/components/screens/request/RequestInputContainer";
 import TokenRequestContainer from "@/components/screens/request/TokenRequestContainer";
 import { Actions } from "@/enums/actions";
-import { usePushNotifications } from "@/hooks/notification/usePushNotification";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { RequestActionNotification } from "@/types/notification/actions";
@@ -21,8 +19,6 @@ import {
 export default function RequestScreen() {
   const { to: toToken } = useFormStore();
   const { chains } = useChainsStore();
-  const { expoPushToken } = usePushNotifications();
-  console.log({ expoPushToken });
   const [requesterAddress, setRequesterAddress] = useState("");
   const [error, setError] = useState("");
 
@@ -54,7 +50,7 @@ export default function RequestScreen() {
           title: "Funds Required",
           data: {
             backRoute: "(tabs)",
-            screenRoute: "exp://192.168.1.10:8081/--/actions/send",
+            screenRoute: `${process.env.EXPO_PUBLIC_APP}/actions/send`,
             toToken: toToken,
             type: Actions.Request,
             recipient: requesterAddress,

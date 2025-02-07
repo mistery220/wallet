@@ -10,7 +10,7 @@ const TwitterProfile = () => {
   const { code, state } = useLocalSearchParams();
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState("");
-  const { setTwitterUsername, twitterUsername } = useCurrentStore();
+  const { setTwitter, twitterUsername } = useCurrentStore();
 
   useEffect(() => {
     async function authorizeUser() {
@@ -21,8 +21,9 @@ const TwitterProfile = () => {
         );
         setIsLoadingProfile(false);
 
+        console.log(userData)
         if (userData) {
-          setTwitterUsername(userData.username);
+          setTwitter(userData.id, userData.username);
           setTimeout(() => {
             router.push("/(tabs)");
           }, 3000);

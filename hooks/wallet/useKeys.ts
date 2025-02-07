@@ -3,14 +3,17 @@ import { Networks } from "@/enums/network/ecosystem";
 import { useCurrentStore } from "@/store/current";
 import { joinStrings } from "@/utils/string/join";
 import { Keypair } from "@solana/web3.js";
+import axios from "axios";
 import * as bip39 from "bip39";
 import bs58 from "bs58";
 import { HDKey } from "micro-ed25519-hdkey";
 import { toHex } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
+import { usePushNotifications } from "../notification/usePushNotification";
 
 export default function useKeys() {
-  const { addAndSetNewAccount } = useCurrentStore();
+  const { addAndSetNewAccount, setUserId } = useCurrentStore();
+  const { expoPushToken } = usePushNotifications();
 
   async function getAccountsAndStoreKey(
     mnemonic: string,
@@ -74,6 +77,21 @@ export default function useKeys() {
 
     // @TODO add password from user
     await EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
+    if (expoPushToken) {
+      setUserId(expoPushToken.data);
+      try {
+        const res = await axios.post(
+          `${process.env.EXPO_PUBLIC_SERVER}/user/add`,
+          {
+            userId: expoPushToken.data,
+            addresses: acc.address,
+            expoToken: expoPushToken.data,
+          }
+        );
+      } catch (e) {
+        console.log({ e });
+      }
+    }
   }
-  return { getAccountsAndStoreKey, saveWalletAndProtectKeys };
+  return { saveWalletAndProtectKeys };
 }

@@ -5,6 +5,8 @@ type CurrentStoreState = {
   chainId: number;
   activeId: string;
   twitterUsername: string;
+  twitterId: string;
+  userId: string;
 };
 
 type CurrentStoreActions = {
@@ -12,7 +14,8 @@ type CurrentStoreActions = {
   setActiveId: (activeId: string) => void;
   addAndSetNewAccount: (account: Account) => void;
   updateAccount: (account: Account) => void;
-  setTwitterUsername: (username: string) => void;
+  setTwitter: (id: string, username: string) => void;
+  setUserId: (userId: string) => void;
 };
 
 export type CurrentStore = CurrentStoreState & CurrentStoreActions;

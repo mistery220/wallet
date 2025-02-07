@@ -1,5 +1,6 @@
+import "react-native-get-random-values";
+
 import useKeys from "@/hooks/wallet/useKeys";
-import { useCurrentStore } from "@/store/current";
 import { AntDesign } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useNavigationContainerRef } from "expo-router";

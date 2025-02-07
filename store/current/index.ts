@@ -10,9 +10,12 @@ export const useCurrentStore = create<CurrentStore>()(
       chainId: 42161,
       accounts: {},
       activeId: "",
+      userId: "",
+      twitterId: "",
       twitterUsername: "",
-      setTwitterUsername: (username: string) =>
-        set({ twitterUsername: username }),
+      setTwitter: (id: string, username: string) =>
+        set({ twitterUsername: username, twitterId: id }),
+      setUserId: (userId: string) => set({ userId }),
       addAndSetNewAccount: (account: Account) =>
         set((state) => {
           const acc = state.accounts;

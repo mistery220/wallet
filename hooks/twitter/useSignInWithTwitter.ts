@@ -1,9 +1,11 @@
 import { deleteSecureData } from "@/encryption/storage/delete";
 import { retrieveSecureData } from "@/encryption/storage/retrieve";
 import { saveSecureData } from "@/encryption/storage/save";
+import { useCurrentStore } from "@/store/current";
 import axios from "axios";
 
 export default function useSignInWithTwitter() {
+  const { userId } = useCurrentStore();
   /**
  Example userdata ressponse after doing `.data.data`
  id =
@@ -51,6 +53,15 @@ username =
       );
 
       const userData = userResponse.data.data;
+      const res = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER}/user/add/twitter`,
+        {
+          userId,
+          twitterUserId: userData.id,
+          twitterUsername: userData.username,
+        }
+      );
+      console.log("received data: ", { res: res.data });
       await saveSecureData("twitter-username", userData.username);
       deleteSecureData("twitterCodeVerfier");
 
