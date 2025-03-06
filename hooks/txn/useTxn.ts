@@ -2,16 +2,18 @@ import { Networks } from "@/enums/network/ecosystem";
 import { TxnStatus } from "@/enums/status/txn";
 import { useChainsStore } from "@/store/chains";
 import useEvmTxn from "./evm/useEvmTxn";
+import useSvmTxn from "./svm/useSvmTxn";
 
 export default function useTxn() {
   const { chains } = useChainsStore();
   const { sendEvmTransaction, waitForEvmTransaction } = useEvmTxn();
+  const { sendSvmTransaction, waitForSvmTransactionReceipt } = useSvmTxn();
 
   async function sendTransaction({
     chainId,
     data,
     toAddress,
-    amount
+    amount,
   }: {
     chainId: number;
     data: string;
@@ -23,9 +25,9 @@ export default function useTxn() {
       case Networks.EVM: {
         return await sendEvmTransaction({ chainId, data, toAddress, amount });
       }
-      //   case Networks.SVM: {
-      //     return await sendSvmTransaction({data});
-      //   }
+      case Networks.SVM: {
+        return await sendSvmTransaction({ data });
+      }
       default:
         return {
           status: TxnStatus.Reverted,
@@ -46,9 +48,9 @@ export default function useTxn() {
       case Networks.EVM: {
         return await waitForEvmTransaction(chainId, hash);
       }
-      // case Networks.SVM: {
-      //   return await waitForSvmTransactionReceipt(txnHash);
-      // }
+      case Networks.SVM: {
+        return await waitForSvmTransactionReceipt(hash);
+      }
       default:
         return {
           status: TxnStatus.Reverted,

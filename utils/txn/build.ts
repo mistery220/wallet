@@ -1,27 +1,43 @@
-import { InputSrc } from "@/enums/form/input";
+import { Networks } from "@/enums/network/ecosystem";
 import { CompleteFormToken } from "@/types/token/form";
-import { joinStrings } from "@/utils/string/join";
-import { getTokenAddress } from "@/utils/tokens/address";
+import { isNativeCurrency, isSvmNativeCurrency } from "@/utils/tokens/address";
+import { buildErc20QuoteResponse } from "../quote/evm/erc20";
+import { buildEvmNativeQuoteResponse } from "../quote/evm/native";
+import { buildSvmNativeQuoteResponse } from "../quote/svm/native";
 
-export const buildSameTransferQuoteToken = ({
-  fromToken,
-  inputSrc,
-  toToken,
-  updateType,
+export const buildSameTransferQuoteToken = async ({
+  from,
+  to,
+  recipient,
+  network,
+  address,
 }: {
-  fromToken: CompleteFormToken;
-  toToken: CompleteFormToken;
-  inputSrc: InputSrc;
-  updateType: InputSrc;
+  from: CompleteFormToken;
+  to: CompleteFormToken;
+  recipient: string;
+  network: Networks;
+  address: string;
 }) => {
-  const selectedToken = updateType === InputSrc.From ? fromToken : toToken;
-  const tokenAddress = getTokenAddress(selectedToken.assets.address);
-  const tokenKey = joinStrings(selectedToken.assets.chainId, tokenAddress);
-  return {
-    [tokenKey]: {
-      chainId: selectedToken.assets.chainId,
-      address: tokenAddress,
-      amount: inputSrc === InputSrc.From ? fromToken.amount : toToken.amount,
-    },
-  };
+  console.log("hereee");
+  switch (network) {
+    case Networks.EVM: {
+      if (isNativeCurrency(from.assets.address)) {
+        return buildEvmNativeQuoteResponse(from, to, recipient);
+      } else {
+        return buildErc20QuoteResponse({
+          fromToken: from,
+          toToken: to,
+          recipient,
+        });
+      }
+    }
+    case Networks.SVM: {
+      if (isSvmNativeCurrency(from.assets.address)) {
+        return await buildSvmNativeQuoteResponse(from, to, recipient, address);
+      }
+      else{
+        
+      }
+    }
+  }
 };

@@ -19,11 +19,19 @@ export default function useSendTxn() {
       case Networks.EVM: {
         const hash = await sendTransaction({
           chainId,
-          data: quotesResponse.data,
-          toAddress: quotesResponse.toAddress,
+          data: quotesResponse.transactionRequest.data,
+          toAddress: quotesResponse.action.toAddress,
           amount: isNativeCurrency(from.assets.address)
             ? trimAndParseUnits(from.amount, from.assets.decimals)
             : 0n,
+        });
+        return hash;
+      }
+      case Networks.SVM: {
+        const hash = await sendTransaction({
+          chainId,
+          data: quotesResponse.transactionRequest.data,
+          toAddress: quotesResponse.action.toAddress,
         });
         return hash;
       }

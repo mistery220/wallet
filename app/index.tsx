@@ -4,7 +4,7 @@ import React from "react";
 
 const MainPage = () => {
   const { activeId } = useCurrentStore();
-  if (activeId.length) {
+  if (activeId.length > 0) {
     return <Redirect href="/(tabs)" />;
   } else {
     return <Redirect href="/onboard" />;

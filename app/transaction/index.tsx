@@ -87,7 +87,13 @@ export default function TransactionScreen() {
       </View>
       <TouchableOpacity
         style={styles.closeButton}
-        onPress={() => router.replace("/(tabs)")}
+        onPress={() => {
+          if (status === TxnStatus.Success) {
+            router.replace("/(tabs)");
+          } else {
+            router.back();
+          }
+        }}
       >
         <Text style={styles.closeButtonText}>Close</Text>
       </TouchableOpacity>

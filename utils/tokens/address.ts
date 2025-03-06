@@ -1,6 +1,8 @@
 import {
   lowercasedNativeAddresses,
-  nativeCurrency,
+  evmNativeCurrency,
+  svmNativeAddress,
+  svmNativeAddressLowerCase,
 } from "@/constants/address/native";
 import { Networks } from "@/enums/network/ecosystem";
 import { Token } from "@/types/token";
@@ -9,7 +11,7 @@ import { isAddress } from "viem";
 
 export const getTokenAddress = (address: string) => {
   if (lowercasedNativeAddresses.includes(address.toLowerCase())) {
-    return nativeCurrency;
+    return evmNativeCurrency;
   }
   return address;
 };
@@ -31,5 +33,15 @@ export const isToAndFromSame = (from: Token, to: Token) => {
 };
 
 export const isNativeCurrency = (address: string) => {
-  return address === nativeCurrency;
+  return address === evmNativeCurrency;
 };
+
+export const isEvmNativeCurrency = (address: string) => {
+  return address === evmNativeCurrency;
+};
+
+export const isSvmNativeCurrency = (address: string) => {
+  return address.toLowerCase() === svmNativeAddressLowerCase;
+};
+
+

@@ -5,7 +5,6 @@ import { SVMTxnStatus } from "@/enums/network/svm/status";
 import { TxnStatus } from "@/enums/status/txn";
 import { useCurrentStore } from "@/store/current";
 import { joinStrings } from "@/utils/string/join";
-import { Wallet } from "@project-serum/anchor";
 import { Connection, Keypair, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 
@@ -17,17 +16,16 @@ export default function useSvmTxn() {
 
   async function sendSvmTransaction({ data }: { data: string }) {
     try {
-      const swapTransactionBuf = Buffer.from(data, "base64");
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
       const decodedKey = await EncryptedStore.decryptAndRetrieve(
         joinStrings(activeId, Networks.SVM),
         "1234"
       );
-      if(!decodedKey) return;
-      const wallet = new Wallet(
-        Keypair.fromSecretKey(bs58.decode(decodedKey))
-      );
-      transaction.sign([wallet.payer]);
+      if (!decodedKey) return;
+      const keyPair = Keypair.fromSecretKey(bs58.decode(decodedKey));
+
+      const swapTransactionBuf = Buffer.from(data, "base64");
+      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      transaction.sign([keyPair]);
       const rawTransaction = transaction.serialize();
       const txnHash = await connection.sendRawTransaction(rawTransaction, {
         skipPreflight: true,
