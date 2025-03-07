@@ -8,7 +8,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import TokenSelection from "../TokenSelection";
 
-const FromContainerSwap = ({
+const FromContainer = ({
   buildTxnData,
 }: {
   isQuoteLoading: boolean;
@@ -48,7 +48,14 @@ const FromContainerSwap = ({
         />
         <TokenSelection
           token={fromToken}
-          onPress={() => router.push("/tokens/from")}
+          onPress={() => {
+            const chainId = fromToken.assets?.chainId || to.assets?.chainId;
+            if (chainId) {
+              router.push(`/tokens/from?isSendAction=true&chainId=${chainId}`);
+            } else {
+              router.push(`/tokens/from?isSendAction=true`);
+            }
+          }}
         />
       </View>
       <View style={styles.detailsRow}>
@@ -92,7 +99,7 @@ const FromContainerSwap = ({
   );
 };
 
-export default FromContainerSwap;
+export default FromContainer;
 
 const styles = StyleSheet.create({
   swapBox: {

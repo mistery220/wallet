@@ -1,7 +1,6 @@
 import Header from "@/components/tabs/main/Header";
 import UserTokenListItem from "@/components/token/UserTokenListItem";
 import useTokenBalance from "@/hooks/balance/useBalance";
-import { usePushNotifications } from "@/hooks/notification/usePushNotification";
 import { useCurrentStore } from "@/store/current";
 import { useUserTokensStore } from "@/store/user/tokens";
 import { Token } from "@/types/token";

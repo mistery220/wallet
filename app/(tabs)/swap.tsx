@@ -1,109 +1,198 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import FromContainerSwap from "@/components/token/swap/FromContainer";
+import ToContainerSwap from "@/components/token/swap/ToContainer";
+import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
+import useSendTxn from "@/hooks/txn/send/useSendTxn";
+import { useChainsStore } from "@/store/chains";
+import { useFormStore } from "@/store/form";
+import { validateAddress } from "@/utils/tokens/address";
+import { AntDesign } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+export default function SendScreen() {
+  const {
+    from: fromToken,
+    to: toToken,
+    interchangeFormTokens,
+    recipient,
+    setRecipient,
+  } = useFormStore();
+  const { chains } = useChainsStore();
 
-export default function TabTwoScreen() {
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const { sendToken } = useSendTxn();
+  const { buildTxnData, quoteResponse, isQuoteLoading } = useBuildTxnData();
+
+  async function txnBuilder() {
+    buildTxnData({
+      from: fromToken,
+      to: toToken,
+    });
+  }
+
+  const handleSend = async () => {
+    // @TODO upate this to a function and use in button disable also.
+    if (
+      !fromToken.assets ||
+      !fromToken.amount ||
+      !toToken.amount ||
+      !toToken.assets ||
+      !quoteResponse
+    )
+      return;
+    if (!recipient.trim()) {
+      setError("Please enter a recipient address");
+      return;
+    }
+
+    if (!validateAddress(recipient, chains[fromToken.assets.chainId].type)) {
+      setError("Please enter a valid Ethereum address");
+      return;
+    }
+
+    setError("");
+    const hash = await sendToken(quoteResponse);
+    router.push(
+      `/transaction?chainId=${fromToken.assets.chainId}&hash=${hash}`
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+          {/* You Pay Section */}
+          <FromContainerSwap
+            quoteResponse={quoteResponse}
+            buildTxnData={txnBuilder}
+            isQuoteLoading={isQuoteLoading}
+          />
+
+          {/* Swap Icon */}
+          <View style={styles.swapIconContainer}>
+            <Pressable
+              onPress={interchangeFormTokens}
+              style={styles.swapButton}
+            >
+              <AntDesign name="swap" size={24} color="#fff" />
+            </Pressable>
+          </View>
+
+          {/* You Receive Section */}
+          <ToContainerSwap
+            isQuoteLoading={isQuoteLoading}
+            buildTxnData={txnBuilder}
+            quoteResponse={quoteResponse}
+            title="You Receive"
+          />
+        </View>
+
+        <View style={styles.footer}>
+          <Pressable
+            style={[
+              styles.sendButton,
+              (!recipient || !fromToken || !toToken) && styles.disabledButton,
+            ]}
+            onPress={handleSend}
+            disabled={!recipient || !fromToken || !toToken}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
+          </Pressable>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: "#1A1A1A",
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  tokenSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3C3C3C",
+    padding: 8,
+    borderRadius: 24,
+    minWidth: 120,
+  },
+  tokenIconContainer: {
+    marginRight: 8,
+  },
+  tokenIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#666",
+  },
+  tokenSelectorText: {
+    color: "white",
+    fontSize: 16,
+    marginRight: 8,
+    flex: 1,
+  },
+
+  swapIconContainer: {
+    alignItems: "center",
+    marginVertical: -16,
+    zIndex: 1,
+  },
+  swapButton: {
+    backgroundColor: "#4C4C4C",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recipientContainer: {
+    marginTop: 24,
+  },
+  recipientInput: {
+    backgroundColor: "#2C2C2C",
+    borderRadius: 12,
+    padding: 16,
+    color: "white",
+    fontSize: 16,
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  footer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  sendButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#4a4a4a",
+    opacity: 0.7,
+  },
+  sendButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

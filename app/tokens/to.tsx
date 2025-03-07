@@ -12,11 +12,11 @@ import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function ToTokenSelection() {
-  const { setToToken } = useFormStore();
+  const { setToToken, from, setFromToken } = useFormStore();
   const router = useRouter();
-  const { fromChainId } = useLocalSearchParams();
+  const { chainId, isSendAction } = useLocalSearchParams();
   const [selectedChainId, setSelectedChainId] = useState<number>(
-    Number(fromChainId || DEFAULT_CHAINID)
+    Number(chainId || DEFAULT_CHAINID)
   );
   const { tokens } = useTokensStore();
   const { tokens: userTokens } = useUserTokensStore();
@@ -24,7 +24,11 @@ export default function ToTokenSelection() {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSelectToken = (token: Token) => {
-    setToToken({ assets: token, amount: "" });
+    const toToken = { assets: token, amount: "" };
+    setToToken(toToken);
+    if (isSendAction && !from.assets) {
+      setFromToken(toToken);
+    }
     router.back();
   };
 

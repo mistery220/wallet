@@ -7,7 +7,10 @@ export const formatAndTrimUnits = (
   units: number = DEFAULT_DECIMAL_TRIM
 ) => {
   const formattedVal = Number(formatUnits(BigInt(val), decimals));
-  return parseFloat(formattedVal.toFixed(units)).toString();
+  const factor = Math.pow(10, decimals);
+  return parseFloat(
+    (Math.trunc(formattedVal * factor) / factor).toFixed(units)
+  ).toString();
 };
 
 export const trimUnits = (
@@ -15,7 +18,10 @@ export const trimUnits = (
   units: number = DEFAULT_DECIMAL_TRIM
 ) => {
   const parsedNum = Number(val);
-  return parseFloat(parsedNum.toFixed(units)).toString();
+  const factor = Math.pow(10, units);
+  return parseFloat(
+    (Math.trunc(parsedNum * factor) / factor).toFixed(units)
+  ).toString();
 };
 
 export const trimAndParseUnits = (amount: string, decimals: number) => {

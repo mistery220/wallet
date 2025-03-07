@@ -7,8 +7,9 @@ import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import TokenSelection from "../TokenSelection";
+import { chain } from "ramda";
 
-const ToContainerSwap = ({
+const ToContainer = ({
   buildTxnData,
   title,
   isQuoteLoading,
@@ -18,7 +19,7 @@ const ToContainerSwap = ({
   title: string;
   quoteResponse?: QuoteResponse;
 }) => {
-  const { to: toToken, setToToken, setInputSrc } = useFormStore();
+  const { to: toToken, setToToken, setInputSrc, from } = useFormStore();
   return (
     <View style={styles.swapBox}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -42,7 +43,14 @@ const ToContainerSwap = ({
         />
         <TokenSelection
           token={toToken}
-          onPress={() => router.push("/tokens/to")}
+          onPress={() => {
+            const chainId = toToken.assets?.chainId || from.assets?.chainId;
+            if (chainId) {
+              router.push(`/tokens/to?isSendAction=true&chainId=${chainId}`);
+            } else {
+              router.push(`/tokens/to?isSendAction=true`);
+            }
+          }}
         />
       </View>
       {isQuoteLoading ? (
@@ -56,7 +64,7 @@ const ToContainerSwap = ({
   );
 };
 
-export default ToContainerSwap;
+export default ToContainer;
 
 const styles = StyleSheet.create({
   swapBox: {

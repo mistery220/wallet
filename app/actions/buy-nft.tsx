@@ -20,8 +20,8 @@ import { useChainsStore } from "@/store/chains";
 
 // Component Imports
 import TokenSelection from "@/components/token/TokenSelection";
-import FromContainer from "@/components/token/swap/FromContainer";
-import ToContainer from "@/components/token/swap/ToContainer";
+import FromContainerSwap from "@/components/token/swap/FromContainer";
+import ToContainerSwap from "@/components/token/swap/ToContainer";
 import { useTokensStore } from "@/store/tokens";
 
 interface NFT {
@@ -123,7 +123,7 @@ export default function NFTBuyScreen() {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       {/* From Token Selection (Payment Token) */}
-      <FromContainer
+      <FromContainerSwap
         buildTxnData={
           () => {}
           // () =>
@@ -152,7 +152,7 @@ export default function NFTBuyScreen() {
       </View>
 
       {/* To Token (NFT Price) */}
-      <ToContainer
+      <ToContainerSwap
         title="NFT Price"
         isQuoteLoading={false}
         buildTxnData={() => {}}

@@ -1,5 +1,5 @@
-import FromContainer from "@/components/token/swap/FromContainer";
-import ToContainer from "@/components/token/swap/ToContainer";
+import FromContainer from "@/components/token/send/FromContainer";
+import ToContainer from "@/components/token/send/ToContainer";
 import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
 import useSendTxn from "@/hooks/txn/send/useSendTxn";
 import { useChainsStore } from "@/store/chains";
