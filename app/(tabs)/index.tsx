@@ -145,6 +145,12 @@ const Profile = () => {
               label=""
             />
           )}
+
+          <ActionButton
+            onPress={() => router.push("/actions/scan")}
+            icon="transfer-within-a-station"
+            label=""
+          />
         </View>
 
         <View style={styles.assetsSection}>

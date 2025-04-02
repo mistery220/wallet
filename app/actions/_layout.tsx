@@ -16,6 +16,12 @@ const ActionsLayout = () => {
           headerTitle: "Request",
         }}
       />
+      <Stack.Screen
+        name="scan"
+        options={{
+          headerTitle: "QR Scanner",
+        }}
+      />
     </Stack>
   );
 };

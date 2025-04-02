@@ -8,6 +8,7 @@ import { validateAddress } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import Constants from "expo-constants";
 import {
   Keyboard,
   Pressable,
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1A1A1A",
+    paddingTop: Constants.statusBarHeight,
   },
   content: {
     flex: 1,
