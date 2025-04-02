@@ -1,6 +1,5 @@
 // WalletKitClient.ts
 
-import { onSessionProposal } from "@/utils/wallet-kit/session";
 import { IWalletKit, WalletKit, WalletKitTypes } from "@reown/walletkit";
 import { Core } from "@walletconnect/core";
 import "@walletconnect/react-native-compat";
@@ -46,10 +45,37 @@ export default class WalletKitClient {
     }
   }
 
-  public static async onSessionProposal(
-    proposal: WalletKitTypes.SessionProposal
-  ) {
-    await onSessionProposal({ proposal, walletKit: WalletKitClient.walletKit });
+  public static async sessionProposal() {
+    WalletKitClient.walletKit.on("session_proposal", async (proposal) => {
+      const { id, params } = proposal;
+      try {
+        const approvedNamespaces = buildApprovedNamespaces({
+          proposal: params,
+          supportedNamespaces: {
+            eip155: {
+              chains: ["eip155:1"],
+              methods: ["eth_sendTransaction", "personal_sign"],
+              events: ["accountsChanged", "chainChanged"],
+              accounts: ["eip155:1:0x62414d44AaE1aA532630eDa14Df7F449C475759C"],
+            },
+          },
+        });
+
+        const session = await WalletKitClient.walletKit.approveSession({
+          id,
+          namespaces: approvedNamespaces,
+        });
+
+        const redirect = session.peer.metadata.redirect?.native;
+        if (redirect) Linking.openURL(redirect);
+      } catch (error) {
+        console.log({ error });
+        await WalletKitClient.walletKit.rejectSession({
+          id,
+          reason: getSdkError("USER_REJECTED"),
+        });
+      }
+    });
   }
 
   public static getWalletKit(): IWalletKit {

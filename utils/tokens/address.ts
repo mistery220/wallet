@@ -16,7 +16,10 @@ export const getTokenAddress = (address: string) => {
   return address;
 };
 
-export const validateAddress = (address: string, network: Networks) => {
+export const validateAddressByNetwork = (
+  address: string,
+  network: Networks
+) => {
   switch (network) {
     case Networks.EVM:
       return isAddress(address);
@@ -25,6 +28,16 @@ export const validateAddress = (address: string, network: Networks) => {
       return PublicKey.isOnCurve(pubKey);
     }
   }
+  return false;
+};
+
+export const isAddressValidForAnyNetwork = (address: string) => {
+  const isValidEvmAddress = isAddress(address);
+  if (isValidEvmAddress) return true;
+
+  const pubKey = new PublicKey(address);
+  const isValidSvmAddress = PublicKey.isOnCurve(pubKey);
+  if (isValidSvmAddress) return true;
   return false;
 };
 
@@ -43,5 +56,3 @@ export const isEvmNativeCurrency = (address: string) => {
 export const isSvmNativeCurrency = (address: string) => {
   return address.toLowerCase() === svmNativeAddressLowerCase;
 };
-
-

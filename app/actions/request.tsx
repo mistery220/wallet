@@ -4,7 +4,7 @@ import { Actions } from "@/enums/actions";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { RequestActionNotification } from "@/types/notification/actions";
-import { validateAddress } from "@/utils/tokens/address";
+import { validateAddressByNetwork } from "@/utils/tokens/address";
 import axios from "axios";
 import React, { useState } from "react";
 import {
@@ -33,7 +33,7 @@ export default function RequestScreen() {
     }
 
     if (
-      !validateAddress(requesterAddress, chains[toToken.assets.chainId].type)
+      !validateAddressByNetwork(requesterAddress, chains[toToken.assets.chainId].type)
     ) {
       setError("Please enter a valid address");
       return;

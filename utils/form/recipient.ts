@@ -1,11 +1,14 @@
 import { Networks } from "@/enums/network/ecosystem";
 import { isAddress } from "viem";
+import {
+  isAddressValidForAnyNetwork,
+  validateAddressByNetwork,
+} from "../tokens/address";
 
-export const isValidRecipient = (address: string, network: Networks) => {
-  switch (network) {
-    case Networks.EVM:
-      return isAddress(address);
-    default:
-      return false;
+export const isValidRecipient = (address: string, network?: Networks) => {
+  if (network) {
+    validateAddressByNetwork(address, network);
+  } else {
+    isAddressValidForAnyNetwork(address);
   }
 };

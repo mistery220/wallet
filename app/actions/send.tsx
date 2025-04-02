@@ -4,7 +4,7 @@ import useBuildTxnData from "@/hooks/txn/builder/useBuildTxnData";
 import useSendTxn from "@/hooks/txn/send/useSendTxn";
 import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
-import { validateAddress } from "@/utils/tokens/address";
+import { validateAddressByNetwork } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -56,7 +56,7 @@ export default function SendScreen() {
       return;
     }
 
-    if (!validateAddress(recipient, chains[fromToken.assets.chainId].type)) {
+    if (!validateAddressByNetwork(recipient, chains[fromToken.assets.chainId].type)) {
       setError("Please enter a valid Ethereum address");
       return;
     }

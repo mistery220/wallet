@@ -31,6 +31,7 @@ export default function RootLayout() {
       async function initalizeWalletConnectClient() {
         const walletKit = await WalletKitClient.init();
       }
+      initalizeWalletConnectClient();
     }
   }, [loaded]);
 
