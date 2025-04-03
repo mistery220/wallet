@@ -27,6 +27,10 @@ export const useCurrentStore = create<CurrentStore>()(
         }),
       setChainId: (chainId: number) => set({ chainId }),
       setActiveId: (activeId: string) => set({ activeId }),
+      updateAllAccounts: (accounts: Record<string, Account>) =>
+        set(() => ({
+          accounts,
+        })),
       updateAccount: (account: Account) =>
         set((state) => ({
           accounts: { ...state.accounts, [account.id]: account },

@@ -7,13 +7,11 @@ const CORNER_SIZE = 30;
 const BORDER_WIDTH = 4;
 
 const Camera = ({
-  scanned,
   facing,
   torchOn,
   handleBarCodeScanned,
   toggleTorch,
 }: {
-  scanned: boolean;
   facing: CameraType;
   torchOn: boolean;
   handleBarCodeScanned: ({ data }: any) => void;
@@ -21,36 +19,31 @@ const Camera = ({
 }) => {
   useEffect(() => {}, [torchOn]);
   return (
-    !scanned && (
-      <CameraView
-        style={styles.camera}
-        facing={facing}
-        enableTorch={torchOn}
-        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={handleBarCodeScanned}
-        zoom={0.7}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.scannerArea}>
-            <View style={styles.cornerTopLeft} />
-            <View style={styles.cornerTopRight} />
-            <View style={styles.cornerBottomLeft} />
-            <View style={styles.cornerBottomRight} />
-          </View>
-
-          <View style={styles.controls}>
-            <TouchableOpacity
-              onPress={toggleTorch}
-              style={styles.controlButton}
-            >
-              <Text style={styles.controlText}>
-                {torchOn ? "Turn Off Torch" : "Turn On Torch"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+    <CameraView
+      style={styles.camera}
+      facing={facing}
+      enableTorch={torchOn}
+      barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+      onBarcodeScanned={handleBarCodeScanned}
+      zoom={0.7}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.scannerArea}>
+          <View style={styles.cornerTopLeft} />
+          <View style={styles.cornerTopRight} />
+          <View style={styles.cornerBottomLeft} />
+          <View style={styles.cornerBottomRight} />
         </View>
-      </CameraView>
-    )
+
+        <View style={styles.controls}>
+          <TouchableOpacity onPress={toggleTorch} style={styles.controlButton}>
+            <Text style={styles.controlText}>
+              {torchOn ? "Turn Off Torch" : "Turn On Torch"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </CameraView>
   );
 };
 

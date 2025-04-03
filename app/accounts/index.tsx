@@ -50,7 +50,9 @@ const EditAccountScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="white" />
+          <Text>
+            <MaterialIcons name="arrow-back" size={24} color="white" />
+          </Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Account</Text>
         <View style={styles.backButton} /> {/* Empty view for spacing */}
@@ -60,7 +62,9 @@ const EditAccountScreen = () => {
         <View style={styles.accountIcon}>
           <Text style={styles.accountIconText}>A1</Text>
           <TouchableOpacity style={styles.editIconButton}>
-            <MaterialIcons name="edit" size={20} color="white" />
+            <Text>
+              <MaterialIcons name="edit" size={20} color="white" />
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -72,7 +76,9 @@ const EditAccountScreen = () => {
             <Text style={styles.menuLabel}>Account Name</Text>
             <View style={styles.menuValue}>
               <Text style={styles.menuValueText}>Account 1</Text>
-              <MaterialIcons name="chevron-right" size={24} color="#666" />
+              <Text>
+                <MaterialIcons name="chevron-right" size={24} color="#666" />
+              </Text>
             </View>
           </TouchableOpacity>
 
@@ -85,7 +91,9 @@ const EditAccountScreen = () => {
               <Text style={styles.menuValueText}>
                 {accounts[accId]?.networks?.length || 0}
               </Text>
-              <MaterialIcons name="chevron-right" size={24} color="#666" />
+              <Text>
+                <MaterialIcons name="chevron-right" size={24} color="#666" />
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -96,7 +104,9 @@ const EditAccountScreen = () => {
             onPress={() => handleShowSecretPhrase()}
           >
             <Text style={styles.menuLabel}>Show Secret Phrase</Text>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <Text>
+              <MaterialIcons name="chevron-right" size={24} color="#666" />
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -105,7 +115,9 @@ const EditAccountScreen = () => {
             onPress={() => handleShowPrivateKey(Networks.EVM)}
           >
             <Text style={styles.menuLabel}>Show Private Key</Text>
-            <MaterialIcons name="chevron-right" size={24} color="#666" />
+            <Text>
+              <MaterialIcons name="chevron-right" size={24} color="#666" />
+            </Text>
           </TouchableOpacity>
         </View>
 

@@ -12,6 +12,7 @@ type CurrentStoreState = {
 type CurrentStoreActions = {
   setChainId: (chainId: number) => void;
   setActiveId: (activeId: string) => void;
+  updateAllAccounts: (accounts: Record<string, Account>) => void;
   addAndSetNewAccount: (account: Account) => void;
   updateAccount: (account: Account) => void;
   setTwitter: (id: string, username: string) => void;

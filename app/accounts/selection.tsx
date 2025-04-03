@@ -1,21 +1,25 @@
+import WalletKitClient from "@/clients/walletKit/WalletKit";
+import { useCurrentStore } from "@/store/current";
+import { Account } from "@/types/wallet/account";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
-  SafeAreaView,
   TouchableOpacity,
-  ScrollView,
-  Platform,
-  StatusBar,
+  View,
 } from "react-native";
-import React, { useState, useEffect, useMemo } from "react";
-import { useCurrentStore } from "@/store/current";
-import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { Account } from "@/types/wallet/account";
 
 export default function Selection() {
-  const { accounts } = useCurrentStore();
+  const { wcUri } = useLocalSearchParams();
+  const { accounts, updateAllAccounts } = useCurrentStore();
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+
   const [allAccounts, setAllAccounts] =
     useState<Record<string, Account>>(accounts);
 
@@ -43,20 +47,36 @@ export default function Selection() {
     );
   }, [allAccounts]);
 
-  const handleBack = () => {
+  const handleBack = async () => {
     router.back();
   };
 
   const handleConnect = () => {
-    // Get the selected accounts
-    const selectedAccountIds = Object.keys(allAccounts).filter(
-      (id) => allAccounts[id].isSelectedToConnect
-    );
-    console.log("Connecting with accounts:", selectedAccountIds);
-
-    // Here you can pass the selected accounts to the dApp
-    // e.g., connectToDapp(selectedAccountIds);
-
+    setIsConnecting(true);
+    updateAllAccounts(allAccounts);
+    try {
+      const ecosystemWiseAddresses = Object.values(allAccounts).reduce(
+        (acc, account) => {
+          if (account.isSelectedToConnect) {
+            Object.entries(account.address).forEach(([network, address]) => {
+              if (acc[network]) {
+                acc[network] = [...acc[network], address];
+              } else {
+                acc[network] = [address];
+              }
+            });
+          }
+          return acc;
+        },
+        {} as Record<string, string[]>
+      );
+      console.log({ ecosystemWiseAddresses });
+      // WalletKitClient.sessionProposal();
+      // await WalletKitClient.walletKit.pair({ uri: wcUri.toString() });
+    } catch (e) {
+      console.log({ e });
+    }
+    setIsConnecting(false);
     router.back();
   };
 
@@ -131,9 +151,11 @@ export default function Selection() {
             !hasSelectedAccounts && styles.connectButtonDisabled,
           ]}
           onPress={handleConnect}
-          disabled={!hasSelectedAccounts}
+          disabled={!hasSelectedAccounts || isConnecting}
         >
-          <Text style={styles.connectButtonText}>Connect</Text>
+          <Text style={styles.connectButtonText}>
+            {isConnecting ? "Connecting" : "Connect"}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
