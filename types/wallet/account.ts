@@ -7,6 +7,7 @@ export type Account = {
   walletId: string;
   isPhrase: boolean;
   networks: Networks[];
+  isSelectedToConnect: boolean;
 };
 
 export type EcosystemAccount = Record<Networks, string>;

@@ -9,6 +9,7 @@ const ActionsLayout = () => {
       <Stack.Screen name="edit-name" options={{ headerShown: false }} />
       <Stack.Screen name="show-key" options={{ headerShown: false }} />
       <Stack.Screen name="show-phrase" options={{ headerShown: false }} />
+      <Stack.Screen name="selection" options={{ headerShown: false }} />
       <Stack.Screen
         name="active"
         options={{ headerTitle: "Account Addresses" }}

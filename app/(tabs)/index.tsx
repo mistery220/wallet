@@ -147,7 +147,7 @@ const Profile = () => {
           )}
 
           <ActionButton
-            onPress={() => router.push("/actions/scan")}
+            onPress={() => router.push("/accounts/selection")}
             icon="transfer-within-a-station"
             label=""
           />

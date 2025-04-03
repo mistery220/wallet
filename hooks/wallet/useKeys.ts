@@ -10,9 +10,10 @@ import { HDKey } from "micro-ed25519-hdkey";
 import { toHex } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { usePushNotifications } from "../notification/usePushNotification";
+import { Account } from "@/types/wallet/account";
 
 export default function useKeys() {
-  const { addAndSetNewAccount, setUserId } = useCurrentStore();
+  const { activeId, addAndSetNewAccount, setUserId } = useCurrentStore();
   const { expoPushToken } = usePushNotifications();
 
   async function getAccountsAndStoreKey(
@@ -57,13 +58,14 @@ export default function useKeys() {
         }
       }
     }
-    const acc = {
+    const acc: Account = {
       address: addresses,
       name: "Account 1",
       id: accountId,
       walletId,
       isPhrase: true,
       networks: Object.values(Networks),
+      isSelectedToConnect: Boolean(activeId) ? false : true,
     };
     addAndSetNewAccount(acc);
     return acc;
