@@ -17,6 +17,7 @@ import {
 
 export default function Selection() {
   const { wcUri } = useLocalSearchParams();
+  const decodedWcUri = decodeURIComponent(wcUri.toString());
   const { accounts, updateAllAccounts } = useCurrentStore();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
@@ -47,11 +48,11 @@ export default function Selection() {
     );
   }, [allAccounts]);
 
-  const handleBack = async () => {
+  const handleBack = () => {
     router.back();
   };
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setIsConnecting(true);
     updateAllAccounts(allAccounts);
     try {
@@ -70,9 +71,9 @@ export default function Selection() {
         },
         {} as Record<string, string[]>
       );
-      console.log({ ecosystemWiseAddresses });
-      // WalletKitClient.sessionProposal();
-      // await WalletKitClient.walletKit.pair({ uri: wcUri.toString() });
+
+      await WalletKitClient.sessionProposal({});
+      await WalletKitClient.walletKit.pair({ uri: decodedWcUri });
     } catch (e) {
       console.log({ e });
     }

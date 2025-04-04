@@ -29,7 +29,8 @@ export default function QRScanner() {
     if (scanned) return;
     setScanned(true);
     if (data?.startsWith("wc")) {
-      router.push(`/accounts/selection?wcUri=${data}`);
+      const encodedData = encodeURIComponent(data);
+      router.push(`/accounts/selection?wcUri=${encodedData}`);
     } else if (isAddressValidForAnyNetwork(data)) {
       // Handle address logic here
     }

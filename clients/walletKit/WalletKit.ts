@@ -1,6 +1,6 @@
 // WalletKitClient.ts
 
-import { IWalletKit, WalletKit, WalletKitTypes } from "@reown/walletkit";
+import { IWalletKit, WalletKit } from "@reown/walletkit";
 import { Core } from "@walletconnect/core";
 import "@walletconnect/react-native-compat";
 import { ICore } from "@walletconnect/types";
@@ -45,7 +45,7 @@ export default class WalletKitClient {
     }
   }
 
-  public static async sessionProposal() {
+  public static async sessionProposal({}: {}) {
     WalletKitClient.walletKit.on("session_proposal", async (proposal) => {
       const { id, params } = proposal;
       try {
