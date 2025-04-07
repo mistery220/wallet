@@ -1,9 +1,20 @@
 import WalletKitClient from "@/clients/walletKit/WalletKit";
+import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { Account } from "@/types/wallet/account";
+import {
+  buildSupportedNamespaces,
+  getNamespaceAccounts,
+  modifyToNamespaceChain,
+} from "@/utils/walletconnect/namespace";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { buildApprovedNamespaces } from "@walletconnect/utils";
+import {
+  router,
+  useLocalSearchParams,
+  useNavigationContainerRef,
+} from "expo-router";
+import React, { useMemo, useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -17,29 +28,14 @@ import {
 
 export default function Selection() {
   const { wcUri } = useLocalSearchParams();
+  const navigation = useNavigationContainerRef();
   const decodedWcUri = decodeURIComponent(wcUri.toString());
   const { accounts, updateAllAccounts } = useCurrentStore();
+  const { chains } = useChainsStore();
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
   const [allAccounts, setAllAccounts] =
     useState<Record<string, Account>>(accounts);
-
-  // Initialize the first account as selected by default
-  useEffect(() => {
-    if (accounts && Object.keys(accounts).length > 0) {
-      const updatedAccounts = { ...accounts };
-
-      // Set isSelectedToConnect to true for the first account only
-      Object.keys(updatedAccounts).forEach((id, index) => {
-        updatedAccounts[id] = {
-          ...updatedAccounts[id],
-          isSelectedToConnect: index === 0,
-        };
-      });
-
-      setAllAccounts(updatedAccounts);
-    }
-  }, [accounts]);
 
   // Check if any account is selected
   const hasSelectedAccounts = useMemo(() => {
@@ -56,14 +52,31 @@ export default function Selection() {
     setIsConnecting(true);
     updateAllAccounts(allAccounts);
     try {
+      const chainsData = Object.values(chains).reduce((acc, chain) => {
+        const namespaceChain = modifyToNamespaceChain(
+          chain.chainId,
+          chain.type
+        );
+        if (acc[chain.type]) {
+          acc[chain.type] = [...acc[chain.type], namespaceChain];
+        }
+        acc[chain.type] = [namespaceChain];
+        return acc;
+      }, {} as Record<string, string[]>);
+      // @TODO Add the way to add support of the incoming chainIds.
+
       const ecosystemWiseAddresses = Object.values(allAccounts).reduce(
         (acc, account) => {
           if (account.isSelectedToConnect) {
             Object.entries(account.address).forEach(([network, address]) => {
+              const namespaceAccounts = getNamespaceAccounts({
+                address,
+                namespaceChainIds: chainsData[network],
+              });
               if (acc[network]) {
-                acc[network] = [...acc[network], address];
+                acc[network] = [...acc[network], ...namespaceAccounts];
               } else {
-                acc[network] = [address];
+                acc[network] = namespaceAccounts;
               }
             });
           }
@@ -72,13 +85,36 @@ export default function Selection() {
         {} as Record<string, string[]>
       );
 
-      await WalletKitClient.sessionProposal({});
+      WalletKitClient.walletKit.on("session_proposal", async (proposal) => {
+        try {
+          const { id, params } = proposal;
+          const supportedNamespaces = buildSupportedNamespaces({
+            params,
+            chainsData,
+            ecosystemWiseAddresses,
+          });
+
+          const approvedNamespaces = buildApprovedNamespaces({
+            proposal: params,
+            supportedNamespaces,
+          });
+          const session = await WalletKitClient.walletKit.approveSession({
+            id,
+            namespaces: approvedNamespaces,
+          });
+          // console.log({ session });
+          setIsConnecting(false);
+          navigation.reset({
+            routes: [{ name: "(tabs)" }],
+          });
+        } catch (e) {
+          console.log({ e });
+        }
+      });
       await WalletKitClient.walletKit.pair({ uri: decodedWcUri });
     } catch (e) {
       console.log({ e });
     }
-    setIsConnecting(false);
-    router.back();
   };
 
   const toggleAccountSelection = (accountId: string) => {
