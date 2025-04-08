@@ -10,8 +10,6 @@ export default function QRScanner() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [torchOn, setTorchOn] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
-  const [scanned, setScanned] = useState(false);
-  const [areAccountsSelected, setAreAccountsSelected] = useState(false);
 
   if (!permission) return <View />;
   if (!permission.granted) {
@@ -26,8 +24,6 @@ export default function QRScanner() {
   }
 
   const handleBarCodeScanned = async ({ data }: any) => {
-    if (scanned) return;
-    setScanned(true);
     if (data?.startsWith("wc")) {
       const encodedData = encodeURIComponent(data);
       router.push(`/accounts/selection?wcUri=${encodedData}`);
@@ -40,15 +36,12 @@ export default function QRScanner() {
 
   return (
     <View style={styles.container}>
-      {!scanned && (
-        <Camera
-          facing={facing}
-          torchOn={torchOn}
-          handleBarCodeScanned={handleBarCodeScanned}
-          toggleTorch={toggleTorch}
-        />
-      )}
-      {areAccountsSelected && <View>Loading</View>}
+      <Camera
+        facing={facing}
+        torchOn={torchOn}
+        handleBarCodeScanned={handleBarCodeScanned}
+        toggleTorch={toggleTorch}
+      />
     </View>
   );
 }
