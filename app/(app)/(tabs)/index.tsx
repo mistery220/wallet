@@ -125,7 +125,7 @@ const Profile = () => {
           <ActionButton
             icon="send"
             label="Send"
-            onPress={() => router.push("/actions/send")}
+            onPress={() => router.push("/(app)/actions/send")}
           />
           {/* <ActionButton
             
@@ -133,21 +133,21 @@ const Profile = () => {
             label="Receive"
           /> */}
           <ActionButton
-            onPress={() => router.push("/actions/request")}
+            onPress={() => router.push("/(app)/actions/request")}
             icon="payment"
             label="Request"
           />
           <ActionButton icon="add-shopping-cart" label="Buy" />
           {!Boolean(twitterUsername) && (
             <ActionButton
-              onPress={() => router.push("/auth/twitter")}
+              onPress={() => router.push("/(app)/auth/twitter")}
               icon="transfer-within-a-station"
               label=""
             />
           )}
 
           <ActionButton
-            onPress={() => router.push("/actions/scan")}
+            onPress={() => router.push("/(app)/actions/scan")}
             icon="transfer-within-a-station"
             label=""
           />

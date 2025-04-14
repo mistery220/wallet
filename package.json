@@ -37,7 +37,7 @@
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
     "crypto-es": "^2.1.0",
-    "expo": "~52.0.23",
+    "expo": "~52.0.26",
     "expo-application": "~6.0.2",
     "expo-auth-session": "^6.0.2",
     "expo-barcode-scanner": "^13.0.1",

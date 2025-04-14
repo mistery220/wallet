@@ -1,5 +1,3 @@
-import "react-native-get-random-values";
-
 import useKeys from "@/hooks/wallet/useKeys";
 import { AntDesign } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";

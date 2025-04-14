@@ -2,7 +2,7 @@
 import { saveSecureData } from "@/encryption/storage/save";
 import { usePassStore } from "@/store/auth/password";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigationContainerRef } from "expo-router";
+import { router, useNavigationContainerRef } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useState } from "react";
 import {
@@ -22,7 +22,6 @@ import {
 
 const SetPasswordScreen = () => {
   const { setIsAuthenticated, setHasPassword } = usePassStore();
-  const navigation = useNavigationContainerRef();
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -61,9 +60,7 @@ const SetPasswordScreen = () => {
 
       setIsAuthenticated(true);
       setHasPassword(true);
-      navigation.reset({
-        routes: [{ name: "(tabs)" }],
-      });
+      // router.push("/(app)/(tabs)");
     } catch (error) {
       console.error("Error saving password:", error);
       Alert.alert("Error", "There was a problem saving your password.");

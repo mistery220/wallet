@@ -3,7 +3,7 @@ import { retrieveSecureData } from "@/encryption/storage/retrieve";
 import { usePassStore } from "@/store/auth/password";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { store } from "expo-router/build/global-state/router-store";
 import React, { useEffect, useState } from "react";
 import {
@@ -45,9 +45,8 @@ const PasswordValidationScreen = () => {
 
   function authSuccess() {
     setIsAuthenticated(true);
-    router.push("/(tabs)");
     // @TODO update this to navigate as per the requirement
-    // router.replace("/(tabs)");
+    // router.push("/(app)/(tabs)");
   }
 
   const validatePassword = async (): Promise<void> => {
