@@ -1,10 +1,9 @@
 // screens/auth/PasswordValidationScreen.tsx
+import EncryptedStore from "@/encryption/EncryptedStore";
 import { retrieveSecureData } from "@/encryption/storage/retrieve";
 import { usePassStore } from "@/store/auth/password";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
-import { Redirect, router } from "expo-router";
-import { store } from "expo-router/build/global-state/router-store";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -43,8 +42,12 @@ const PasswordValidationScreen = () => {
     checkBiometricSupport();
   }, []);
 
-  function authSuccess() {
-    setIsAuthenticated(true);
+  async function authSuccess() {
+    const storedPassword = await retrieveSecureData("walletPassword");
+    if (storedPassword) {
+      EncryptedStore.setPhrase(storedPassword as string);
+      setIsAuthenticated(true);
+    }
     // @TODO update this to navigate as per the requirement
     // router.push("/(app)/(tabs)");
   }

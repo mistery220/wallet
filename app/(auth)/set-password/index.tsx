@@ -1,4 +1,5 @@
 // screens/auth/SetPasswordScreen.tsx
+import EncryptedStore from "@/encryption/EncryptedStore";
 import { saveSecureData } from "@/encryption/storage/save";
 import { usePassStore } from "@/store/auth/password";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -54,6 +55,7 @@ const SetPasswordScreen = () => {
     try {
       // Save password securely
       await saveSecureData("walletPassword", password);
+      EncryptedStore.setPhrase(password);
 
       // Optional: Enable biometric authentication
       await saveSecureData("useBiometrics", "true");

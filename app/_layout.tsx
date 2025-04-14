@@ -1,23 +1,19 @@
-import "react-native-get-random-values";
+import "../polyfills";
 
+import WalletKitClient from "@/clients/walletKit/WalletKit";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { usePassStore } from "@/store/auth/password";
+import { useSignatureActionStore } from "@/store/signatures/sign";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import "@walletconnect/react-native-compat";
 import { useFonts } from "expo-font";
+import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useRef } from "react";
 import { AppState, AppStateStatus } from "react-native";
-import "react-native-reanimated";
-import "../polyfills";
-
-import WalletKitClient from "@/clients/walletKit/WalletKit";
-import { usePassStore } from "@/store/auth/password";
-import { useSignatureActionStore } from "@/store/signatures/sign";
-import { Slot } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -53,10 +49,7 @@ export default function RootLayout() {
       "change",
       (nextAppState: AppStateStatus) => {
         console.log({ nextAppState });
-        if (
-          appState.current === "active" &&
-          (nextAppState === "background" || nextAppState === "inactive")
-        ) {
+        if (appState.current === "active" && nextAppState === "background") {
           setIsAuthenticated(false);
           console.log("setting");
         }

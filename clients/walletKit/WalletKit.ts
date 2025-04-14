@@ -2,7 +2,6 @@
 
 import { IWalletKit, WalletKit } from "@reown/walletkit";
 import { Core } from "@walletconnect/core";
-import "@walletconnect/react-native-compat";
 import { ICore, SessionTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 import { Linking } from "react-native";
