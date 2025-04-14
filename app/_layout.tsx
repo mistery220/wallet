@@ -6,7 +6,7 @@ import {
 } from "@react-navigation/native";
 import "@walletconnect/react-native-compat";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
@@ -14,8 +14,10 @@ import "react-native-reanimated";
 import "../polyfills";
 
 import WalletKitClient from "@/clients/walletKit/WalletKit";
+import { useSignatureActionStore } from "@/store/signatures/sign";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -23,13 +25,26 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const { addSignData } = useSignatureActionStore();
 
   useEffect(() => {
     // Hide splash screen once assets are loaded
     if (loaded) {
       SplashScreen.hideAsync();
+
       async function initalizeWalletConnectClient() {
         const walletKit = await WalletKitClient.init();
+        walletKit.on("session_request", async (event) => {
+          addSignData(event);
+          router.push("/actions/user-sign");
+
+          // // sign the message
+          // const signedMessage = await wallet.signMessage(message);
+
+          // const response = { id, result: signedMessage, jsonrpc: "2.0" };
+
+          // await walletKit.respondSessionRequest({ topic, response });
+        });
       }
       initalizeWalletConnectClient();
     }

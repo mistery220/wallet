@@ -33,7 +33,7 @@ export default function useKeys() {
           .privateKey as Uint8Array<ArrayBufferLike>;
         const privKeyBytes = toHex(privKey);
         await EncryptedStore.encryptAndStore(
-          joinStrings(accountId, network),
+          account.address,
           privKeyBytes,
           "1234"
         );
@@ -46,12 +46,13 @@ export default function useKeys() {
           const path = `m/44'/501'/${index}'/0'`;
           const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
           const privKeyBase58 = bs58.encode(keypair.secretKey);
+          const publicKey = keypair.publicKey.toBase58();
           await EncryptedStore.encryptAndStore(
-            joinStrings(accountId, network),
+            publicKey,
             privKeyBase58,
             "1234"
           );
-          addresses[network] = keypair.publicKey.toBase58();
+          addresses[network] = publicKey;
         } catch (e) {
           console.log({ e });
           throw new Error();

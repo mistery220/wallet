@@ -22,6 +22,12 @@ const ActionsLayout = () => {
           headerTitle: "QR Scanner",
         }}
       />
+      <Stack.Screen
+        name="user-sign"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

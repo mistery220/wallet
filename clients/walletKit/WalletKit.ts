@@ -15,7 +15,7 @@ export default class WalletKitClient {
 
   private constructor() {}
 
-  public static async init(): Promise<WalletKitClient> {
+  public static async init(): Promise<IWalletKit> {
     if (!WalletKitClient.instance) {
       WalletKitClient.instance = new WalletKitClient();
       WalletKitClient.core = new Core({
@@ -23,7 +23,7 @@ export default class WalletKitClient {
       });
       await WalletKitClient.instance.initialize();
     }
-    return WalletKitClient.instance;
+    return WalletKitClient.walletKit;
   }
 
   private async initialize() {

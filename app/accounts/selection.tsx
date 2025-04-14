@@ -103,6 +103,7 @@ export default function Selection() {
             namespaces: approvedNamespaces,
           });
           // console.log({ session });
+
           setIsConnecting(false);
           navigation.reset({
             routes: [{ name: "(tabs)" }],

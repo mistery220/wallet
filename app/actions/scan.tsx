@@ -1,10 +1,9 @@
-import WalletKitClient from "@/clients/walletKit/WalletKit";
 import Camera from "@/components/scanner/Camera";
 import { isAddressValidForAnyNetwork } from "@/utils/tokens/address";
-import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+import { CameraType, useCameraPermissions } from "expo-camera";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, StyleSheet, Text, View } from "react-native";
 
 export default function QRScanner() {
   const [facing, setFacing] = useState<CameraType>("back");

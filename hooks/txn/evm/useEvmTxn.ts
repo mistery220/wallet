@@ -24,8 +24,9 @@ export default function useEvmTxn() {
     amount?: bigint;
   }) {
     try {
+      const address = accounts[activeId].address[Networks.EVM];
       const decodedKey = await EncryptedStore.decryptAndRetrieve(
-        joinStrings(activeId, Networks.EVM),
+        address,
         "1234"
       );
       if (decodedKey) {
