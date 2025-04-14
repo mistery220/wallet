@@ -32,8 +32,7 @@ export default function ViewSeedPhrase() {
       const isValid = await verifyPassword(password);
       if (isValid) {
         const data = await EncryptedStore.decryptAndRetrieve(
-          walletId as string,
-          password
+          walletId as string
         );
         setSeedPhrase(data as string);
         setIsVerified(true);

@@ -27,8 +27,7 @@ const ShowPhraseScreen = () => {
   const handleReveal = async () => {
     try {
       const secretPhrase = (await EncryptedStore.decryptAndRetrieve(
-        storeName as string,
-        "1234"
+        storeName as string
       )) as string;
       setPhrase(secretPhrase.split(" "));
       setIsVisible(true);

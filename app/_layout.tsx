@@ -12,57 +12,80 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import "react-native-reanimated";
 import "../polyfills";
+import { useSignatureActionStore } from "@/store/signatures/sign";
+import { AppState } from "react-native";
 
 import WalletKitClient from "@/clients/walletKit/WalletKit";
-import { useSignatureActionStore } from "@/store/signatures/sign";
+import { usePassStore } from "@/store/auth/password";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-
 SplashScreen.preventAutoHideAsync();
+const appState = AppState;
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const { setIsAuthenticated, isAuthenticated } = usePassStore();
+  const { addSignData } = useSignatureActionStore();
+
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const { addSignData } = useSignatureActionStore();
 
+  // Effect to hide splash screen once appIsReady and fonts are loaded
   useEffect(() => {
-    // Hide splash screen once assets are loaded
     if (loaded) {
-      SplashScreen.hideAsync();
-
-      async function initalizeWalletConnectClient() {
-        const walletKit = await WalletKitClient.init();
-        walletKit.on("session_request", async (event) => {
-          addSignData(event);
-          router.push("/actions/user-sign");
-
-          // // sign the message
-          // const signedMessage = await wallet.signMessage(message);
-
-          // const response = { id, result: signedMessage, jsonrpc: "2.0" };
-
-          // await walletKit.respondSessionRequest({ topic, response });
-        });
+      // After everything is set up, hide the splash screen
+      SplashScreen.hideAsync().catch(console.error);
+      async function prepare() {
+        try {
+          // Initialize WalletConnect client
+          const walletKit = await WalletKitClient.init();
+          walletKit.on("session_request", async (event) => {
+            addSignData(event);
+            router.push("/actions/user-sign");
+          });
+        } catch (error) {
+          console.error("Error during app initialization:", error);
+        }
       }
-      initalizeWalletConnectClient();
+      prepare();
     }
   }, [loaded]);
 
+  useEffect(() => {
+    const subscription = appState.addEventListener("change", (nextAppState) => {
+      console.log({ nextAppState });
+      if (nextAppState === "background" || nextAppState === "inactive") {
+        console.log("setting ");
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // // If the app is not ready or fonts not loaded, don't render anything
+  // if (!loaded) {
+  //   return null;
+  // }
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboard" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="actions" options={{ headerShown: false }} />
-        <Stack.Screen name="transaction" options={{ headerShown: false }} />
-        <Stack.Screen name="networks" options={{ headerShown: false }} />
-        <Stack.Screen name="tokens" options={{ headerShown: false }} />
-        <Stack.Screen name="wallets" options={{ headerShown: false }} />
-        <Stack.Screen name="accounts" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/twitter" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="onboard" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="actions" />
+        <Stack.Screen name="transaction" />
+        <Stack.Screen name="networks" />
+        <Stack.Screen name="tokens" />
+        <Stack.Screen name="wallets" />
+        <Stack.Screen name="accounts" />
+        <Stack.Screen name="auth/twitter" />
+        {/* <Stack.Screen name="set-password" />
+        <Stack.Screen name="validate-password" /> */}
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

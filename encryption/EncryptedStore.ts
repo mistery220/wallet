@@ -11,9 +11,15 @@ import { saveSecureData } from "./storage/save";
 import { deleteSecureData } from "./storage/delete";
 class EncryptedStorage {
   private static instance: EncryptedStorage;
+  private phrase: string;
 
   private constructor() {
     // private constructor
+    this.phrase = "1234";
+  }
+
+  setPhrase(phrase: string) {
+    this.phrase = phrase;
   }
 
   public static getInstance() {
@@ -23,32 +29,25 @@ class EncryptedStorage {
     return EncryptedStorage.instance;
   }
 
-  async encryptAndStore(
-    storeName: string,
-    value: string,
-    password: string
-  ): Promise<void> {
+  async encryptAndStore(storeName: string, value: string): Promise<void> {
     const saltKey = joinStrings(storeName, "salt");
     let salt = await getSalt(saltKey);
     if (!salt) {
       salt = await generateSalt();
       await saveSalt(saltKey, salt);
     }
-    const key = await deriveKey(password, salt);
+    const key = await deriveKey(this.phrase, salt);
     const encryptedKey = encryptData(value, key);
     await saveSecureData(storeName, encryptedKey);
   }
 
-  async decryptAndRetrieve(
-    storeName: string,
-    password: string
-  ): Promise<string | null> {
+  async decryptAndRetrieve(storeName: string): Promise<string | null> {
     const saltKey = joinStrings(storeName, "salt");
     const salt = await getSalt(saltKey);
     if (!salt) {
       throw new Error("Salt not found. Cannot decrypt private key.");
     }
-    const key = await deriveKey(password, salt);
+    const key = await deriveKey(this.phrase, salt);
 
     const encryptedKey = await retrieveSecureData(storeName);
     if (!encryptedKey) {

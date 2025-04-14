@@ -19,6 +19,7 @@ export default function useNotificationHandler() {
         break;
       }
     }
+    // @TODO here add the auth route.
     router.push(backRoute); // add a back route to be safe
     router.replace(screenRoute);
   }

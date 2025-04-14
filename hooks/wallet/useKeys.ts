@@ -1,7 +1,7 @@
 import EncryptedStore from "@/encryption/EncryptedStore";
 import { Networks } from "@/enums/network/ecosystem";
 import { useCurrentStore } from "@/store/current";
-import { joinStrings } from "@/utils/string/join";
+import { Account } from "@/types/wallet/account";
 import { Keypair } from "@solana/web3.js";
 import axios from "axios";
 import * as bip39 from "bip39";
@@ -10,7 +10,6 @@ import { HDKey } from "micro-ed25519-hdkey";
 import { toHex } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { usePushNotifications } from "../notification/usePushNotification";
-import { Account } from "@/types/wallet/account";
 
 export default function useKeys() {
   const { activeId, addAndSetNewAccount, setUserId } = useCurrentStore();
@@ -32,11 +31,7 @@ export default function useKeys() {
         const privKey = account.getHdKey()
           .privateKey as Uint8Array<ArrayBufferLike>;
         const privKeyBytes = toHex(privKey);
-        await EncryptedStore.encryptAndStore(
-          account.address,
-          privKeyBytes,
-          "1234"
-        );
+        await EncryptedStore.encryptAndStore(account.address, privKeyBytes);
         addresses[network] = account.address;
       } else if (network === Networks.SVM) {
         try {
@@ -47,11 +42,7 @@ export default function useKeys() {
           const keypair = Keypair.fromSeed(hd.derive(path).privateKey);
           const privKeyBase58 = bs58.encode(keypair.secretKey);
           const publicKey = keypair.publicKey.toBase58();
-          await EncryptedStore.encryptAndStore(
-            publicKey,
-            privKeyBase58,
-            "1234"
-          );
+          await EncryptedStore.encryptAndStore(publicKey, privKeyBase58);
           addresses[network] = publicKey;
         } catch (e) {
           console.log({ e });
@@ -79,7 +70,7 @@ export default function useKeys() {
     const newWallet = { accounts: [acc], id: walletId, isPhrase: true };
 
     // @TODO add password from user
-    await EncryptedStore.encryptAndStore(newWallet.id, mnemonic, "1234");
+    await EncryptedStore.encryptAndStore(newWallet.id, mnemonic);
     if (expoPushToken) {
       setUserId(expoPushToken.data);
       try {

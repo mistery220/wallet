@@ -17,10 +17,7 @@ export default function useSvmTxn() {
   async function sendSvmTransaction({ data }: { data: string }) {
     try {
       const address = accounts[activeId].address[Networks.SVM];
-      const decodedKey = await EncryptedStore.decryptAndRetrieve(
-        address,
-        "1234"
-      );
+      const decodedKey = await EncryptedStore.decryptAndRetrieve(address);
       if (!decodedKey) return;
       const keyPair = Keypair.fromSecretKey(bs58.decode(decodedKey));
 

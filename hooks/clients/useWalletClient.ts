@@ -21,10 +21,7 @@ export default function useWalletClient() {
     try {
       switch (ecosystem) {
         case Networks.EVM: {
-          const decodedKey = await EncryptedStore.decryptAndRetrieve(
-            address,
-            "1234"
-          );
+          const decodedKey = await EncryptedStore.decryptAndRetrieve(address);
           if (decodedKey) {
             const accountFromPrivKey = privateKeyToAccount(
               decodedKey as HexString

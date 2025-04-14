@@ -25,10 +25,7 @@ export default function useEvmTxn() {
   }) {
     try {
       const address = accounts[activeId].address[Networks.EVM];
-      const decodedKey = await EncryptedStore.decryptAndRetrieve(
-        address,
-        "1234"
-      );
+      const decodedKey = await EncryptedStore.decryptAndRetrieve(address);
       if (decodedKey) {
         const accountFromPrivKey = privateKeyToAccount(decodedKey as HexString);
         const walletClient = createWalletClient({

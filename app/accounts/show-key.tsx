@@ -53,8 +53,7 @@ const ShowKeyScreen = () => {
 
     try {
       const key = (await EncryptedStore.decryptAndRetrieve(
-        joinStrings(activeId, selectedChain.type),
-        "1234"
+        joinStrings(activeId, selectedChain.type)
       )) as string;
       setPrivateKey(key);
       setIsVisible(true);
