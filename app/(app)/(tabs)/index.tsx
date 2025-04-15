@@ -109,9 +109,10 @@ const Profile = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#fff"
-            titleColor="#fff"
-            colors={["#fff"]}
+            tintColor="#007AFF"
+            titleColor="#999"
+            colors={["#007AFF"]}
+            progressBackgroundColor="#2A2A2A"
           />
         }
       >
@@ -137,20 +138,19 @@ const Profile = () => {
             icon="payment"
             label="Request"
           />
+          <ActionButton
+            onPress={() => router.push("/(app)/actions/scan")}
+            icon="qr-code-scanner"
+            label="Scan"
+          />
           <ActionButton icon="add-shopping-cart" label="Buy" />
-          {!Boolean(twitterUsername) && (
+          {/* {!Boolean(twitterUsername) && (
             <ActionButton
               onPress={() => router.push("/(app)/auth/twitter")}
               icon="transfer-within-a-station"
               label=""
             />
-          )}
-
-          <ActionButton
-            onPress={() => router.push("/(app)/actions/scan")}
-            icon="transfer-within-a-station"
-            label=""
-          />
+          )} */}
         </View>
 
         <View style={styles.assetsSection}>
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: "white",
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "500",
   },
   assetsSection: {

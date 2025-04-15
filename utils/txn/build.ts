@@ -18,7 +18,6 @@ export const buildSameTransferQuoteToken = async ({
   network: Networks;
   address: string;
 }) => {
-  console.log("hereee");
   switch (network) {
     case Networks.EVM: {
       if (isNativeCurrency(from.assets.address)) {

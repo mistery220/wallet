@@ -52,7 +52,6 @@ export default function RootLayout() {
       SplashScreen.hideAsync().catch(console.error);
       (async () => {
         try {
-          console.log("here");
           const walletKit = await WalletKitClient.init();
           walletKit.on("session_request", async (event) => {
             addSignData(event);

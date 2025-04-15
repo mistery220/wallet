@@ -25,7 +25,7 @@ const TwitterProfile = () => {
         if (userData) {
           setTwitter(userData.id, userData.username);
           setTimeout(() => {
-            router.push("/(tabs)");
+            router.push("/(app)/(tabs)");
           }, 3000);
         } else {
           setError("Authorization failed. Please try again.");

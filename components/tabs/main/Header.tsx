@@ -20,7 +20,7 @@ const Header = () => {
         {/* Left side - Network indicator */}
         <TouchableOpacity
           style={styles.networkIndicator}
-          onPress={() => router.push("/networks")}
+          onPress={() => router.push("/(app)/networks")}
         >
           <View style={styles.networkDot} />
           <Text style={styles.networkText}>Mainnet</Text>
@@ -30,7 +30,7 @@ const Header = () => {
         {/* Center - Account Name */}
         <TouchableOpacity
           style={styles.accountNameContainer}
-          onPress={() => router.push("/accounts/active")}
+          onPress={() => router.push("/(app)/accounts/active")}
         >
           <Text style={styles.accountName}>{active.name}</Text>
         </TouchableOpacity>
@@ -38,7 +38,7 @@ const Header = () => {
         {/* Right side - Wallets button */}
         <TouchableOpacity
           style={styles.walletsButton}
-          onPress={() => router.push("/wallets")}
+          onPress={() => router.push("/(app)/wallets")}
         >
           <MaterialIcons name="account-balance-wallet" size={16} color="#999" />
           <Text style={styles.walletsText}>Wallets</Text>

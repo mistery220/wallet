@@ -2,16 +2,20 @@ import RequestInputContainer from "@/components/screens/request/RequestInputCont
 import TokenRequestContainer from "@/components/screens/request/TokenRequestContainer";
 import { Actions } from "@/enums/actions";
 import { useChainsStore } from "@/store/chains";
+import { useCurrentStore } from "@/store/current";
 import { useFormStore } from "@/store/form";
 import { RequestActionNotification } from "@/types/notification/actions";
 import { validateAddressByNetwork } from "@/utils/tokens/address";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Keyboard,
   Pressable,
   StyleSheet,
   Text,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -19,8 +23,10 @@ import {
 export default function RequestScreen() {
   const { to: toToken } = useFormStore();
   const { chains } = useChainsStore();
+  const { accounts, activeId } = useCurrentStore();
   const [requesterAddress, setRequesterAddress] = useState("");
   const [error, setError] = useState("");
+  const [qrModalVisible, setQRModalVisible] = useState(false);
 
   const handleRequest = async () => {
     if (!toToken.assets || !toToken.amount) {
@@ -33,7 +39,10 @@ export default function RequestScreen() {
     }
 
     if (
-      !validateAddressByNetwork(requesterAddress, chains[toToken.assets.chainId].type)
+      !validateAddressByNetwork(
+        requesterAddress,
+        chains[toToken.assets.chainId].type
+      )
     ) {
       setError("Please enter a valid address");
       return;
@@ -67,6 +76,19 @@ export default function RequestScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Request Funds</Text>
+            <TouchableOpacity
+              style={styles.qrButton}
+              onPress={() => {
+                router.replace("/(app)/accounts/active");
+              }}
+              accessibilityLabel="Show my QR code"
+            >
+              <Ionicons name="qr-code" size={24} color="#007AFF" />
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.boxContainer}>
             {/* Token Request Section */}
             <TokenRequestContainer />
@@ -106,6 +128,24 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  qrButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
   },
   boxContainer: {
     padding: 16,

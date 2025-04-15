@@ -66,8 +66,11 @@ const PasswordValidationScreen = () => {
     };
   }, []);
 
-  async function authSuccess() {
-    const storedPassword = await retrieveSecureData("walletPassword");
+  async function authSuccess(storedPassword?: string) {
+    if (!storedPassword) {
+      storedPassword =
+        (await retrieveSecureData("walletPassword")) || undefined;
+    }
     if (storedPassword) {
       EncryptedStore.setPhrase(storedPassword as string);
       setIsAuthenticated(true);
@@ -82,7 +85,7 @@ const PasswordValidationScreen = () => {
 
       if (password === storedPassword) {
         // Password is valid, authenticate
-        authSuccess();
+        authSuccess(storedPassword);
       } else {
         setErrorMessage("Invalid password. Please try again.");
         setPassword("");
@@ -96,7 +99,7 @@ const PasswordValidationScreen = () => {
   const handleBiometricAuth = async (): Promise<void> => {
     try {
       const biometricAuth = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Authenticate to access your wallet",
+        promptMessage: `Authenticate to access ${process.env.EXPO_PUBLIC_APP_NAME}`,
         disableDeviceFallback: false,
         cancelLabel: "Cancel",
       });

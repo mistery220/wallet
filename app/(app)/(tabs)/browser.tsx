@@ -1,15 +1,28 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import TabbedBrowser from "@/components/browser/Browser";
+import Constants from "expo-constants";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { WebView } from "react-native-webview";
 
-const browser = () => {
+export default function Browser() {
+  const [result, setResult] = useState<any>(null);
+
   return (
-    <View>
-      <TabbedBrowser />
+    <View style={styles.container}>
+      <WebView
+        source={{ uri: "https://reactnative.dev/" }}
+        style={styles.webview} // Apply the correct styles here
+      />
     </View>
   );
-};
+}
 
-export default browser;
-
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1, // Ensures the container takes up the entire screen
+    backgroundColor: "#ecf0f1",
+    paddingTop: Constants.statusBarHeight,
+  },
+  webview: {
+    flex: 1,
+  },
+});
