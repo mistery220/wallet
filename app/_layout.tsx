@@ -1,4 +1,7 @@
+import "react-native-get-random-values";
 import "../polyfills";
+import "react-native-reanimated";
+import "@walletconnect/react-native-compat";
 
 import WalletKitClient from "@/clients/walletKit/WalletKit";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -14,6 +17,7 @@ import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useRef } from "react";
 import { AppState, AppStateStatus } from "react-native";
+import EncryptedStore from "@/encryption/EncryptedStore";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,11 +31,28 @@ export default function RootLayout() {
 
   const appState = useRef(AppState.currentState);
 
+  const { setIsAuthenticated } = usePassStore();
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      (nextAppState: AppStateStatus) => {
+        if (appState.current === "active" && nextAppState === "background") {
+          EncryptedStore.resetPhrase();
+          setIsAuthenticated(false);
+        }
+        appState.current = nextAppState;
+      }
+    );
+
+    return () => subscription.remove();
+  }, []);
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync().catch(console.error);
       (async () => {
         try {
+          console.log("here");
           const walletKit = await WalletKitClient.init();
           walletKit.on("session_request", async (event) => {
             addSignData(event);
@@ -42,23 +63,6 @@ export default function RootLayout() {
       })();
     }
   }, [loaded]);
-
-  const { setIsAuthenticated } = usePassStore();
-  useEffect(() => {
-    const subscription = AppState.addEventListener(
-      "change",
-      (nextAppState: AppStateStatus) => {
-        console.log({ nextAppState });
-        if (appState.current === "active" && nextAppState === "background") {
-          setIsAuthenticated(false);
-          console.log("setting");
-        }
-        appState.current = nextAppState;
-      }
-    );
-
-    return () => subscription.remove();
-  }, []);
 
   if (!loaded) return null;
   return (

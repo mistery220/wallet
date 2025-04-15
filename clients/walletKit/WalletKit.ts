@@ -1,4 +1,4 @@
-// WalletKitClient.ts
+import "@walletconnect/react-native-compat";
 
 import { IWalletKit, WalletKit } from "@reown/walletkit";
 import { Core } from "@walletconnect/core";

@@ -1,4 +1,3 @@
-// screens/auth/PasswordValidationScreen.tsx
 import EncryptedStore from "@/encryption/EncryptedStore";
 import { retrieveSecureData } from "@/encryption/storage/retrieve";
 import { usePassStore } from "@/store/auth/password";
@@ -7,6 +6,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  AppState,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -21,14 +21,14 @@ import {
 } from "react-native";
 
 const PasswordValidationScreen = () => {
-  const { setIsAuthenticated } = usePassStore();
+  const { setIsAuthenticated, isAuthenticated } = usePassStore();
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [supportsBiometrics, setSupportsBiometrics] = useState<boolean>(false);
 
   useEffect(() => {
     // Check if device supports biometric authentication
-    const checkBiometricSupport = async (): Promise<void> => {
+    const checkBiometricSupport = async () => {
       const compatible = await LocalAuthentication.hasHardwareAsync();
       const enrolled = await LocalAuthentication.isEnrolledAsync();
       setSupportsBiometrics(compatible && enrolled);
@@ -40,6 +40,30 @@ const PasswordValidationScreen = () => {
     };
 
     checkBiometricSupport();
+
+    // Add AppState listener to detect when app comes back to foreground
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        // App has come to the foreground
+        const checkAndTriggerBiometrics = async () => {
+          const compatible = await LocalAuthentication.hasHardwareAsync();
+          const enrolled = await LocalAuthentication.isEnrolledAsync();
+          setSupportsBiometrics(compatible && enrolled);
+
+          if (compatible && enrolled) {
+            await LocalAuthentication.cancelAuthenticate();
+            handleBiometricAuth();
+          }
+        };
+
+        checkAndTriggerBiometrics();
+      }
+    });
+
+    // Clean up subscription when component unmounts
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   async function authSuccess() {

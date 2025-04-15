@@ -11,15 +11,18 @@ import { saveSecureData } from "./storage/save";
 import { deleteSecureData } from "./storage/delete";
 class EncryptedStorage {
   private static instance: EncryptedStorage;
-  private phrase: string;
+  private phrase: string = "";
 
   private constructor() {
     // private constructor
-    this.phrase = "1234";
   }
 
   setPhrase(phrase: string) {
     this.phrase = phrase;
+  }
+
+  resetPhrase() {
+    this.phrase = "";
   }
 
   public static getInstance() {
