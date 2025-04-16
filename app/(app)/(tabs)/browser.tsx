@@ -1,28 +1,27 @@
-import Constants from "expo-constants";
-import { useState } from "react";
+import BrowserLanding from "@/components/browser/BrowserLanding";
+import TabScreen from "@/components/browser/TabScreen";
+import { useTabsStore } from "@/store/browser/tabs";
+import { router } from "expo-router";
+import React from "react";
 import { StyleSheet, View } from "react-native";
-import { WebView } from "react-native-webview";
 
 export default function Browser() {
-  const [result, setResult] = useState<any>(null);
-
+  const { currTab } = useTabsStore();
+  function showTabsScreen() {
+    router.push("/(app)/browser/tabs");
+  }
   return (
     <View style={styles.container}>
-      <WebView
-        source={{ uri: "https://reactnative.dev/" }}
-        style={styles.webview} // Apply the correct styles here
-      />
+      {currTab ? (
+        <TabScreen showTabsScreen={showTabsScreen} />
+      ) : (
+        <BrowserLanding showTabsScreen={showTabsScreen} />
+      )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Ensures the container takes up the entire screen
-    backgroundColor: "#ecf0f1",
-    paddingTop: Constants.statusBarHeight,
-  },
-  webview: {
     flex: 1,
   },
 });

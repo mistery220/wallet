@@ -6,15 +6,14 @@ import { useChainsStore } from "@/store/chains";
 import { useFormStore } from "@/store/form";
 import { validateAddressByNetwork } from "@/utils/tokens/address";
 import { AntDesign } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import Constants from "expo-constants";
 import {
   Keyboard,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -57,7 +56,12 @@ export default function SendScreen() {
       return;
     }
 
-    if (!validateAddressByNetwork(recipient, chains[fromToken.assets.chainId].type)) {
+    if (
+      !validateAddressByNetwork(
+        recipient,
+        chains[fromToken.assets.chainId].type
+      )
+    ) {
       setError("Please enter a valid Ethereum address");
       return;
     }
