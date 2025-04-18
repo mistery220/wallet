@@ -1,7 +1,11 @@
+import { useTabsStore } from "@/store/browser/tabs";
+import { getFormattedUrl } from "@/utils/browser/url";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import { router } from "expo-router";
+import React, { useState } from "react";
 import {
   Image,
+  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
@@ -38,6 +42,13 @@ const tokens = [
 ];
 
 const BrowserLanding = ({ showTabsScreen }: { showTabsScreen: () => void }) => {
+  const { addNewTabAsCurr } = useTabsStore();
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  function addNewPageAndOpenIt() {
+    const formattedUrl = getFormattedUrl(searchQuery);
+    addNewTabAsCurr(formattedUrl);
+    Keyboard.dismiss();
+  }
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
@@ -50,6 +61,16 @@ const BrowserLanding = ({ showTabsScreen }: { showTabsScreen: () => void }) => {
             placeholder="Sites, tokens, URL"
             placeholderTextColor="#999"
             style={styles.searchBar}
+            value={searchQuery}
+            onChangeText={(input) => {
+              setSearchQuery(input);
+            }}
+            selectTextOnFocus
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            returnKeyType="go"
+            onSubmitEditing={addNewPageAndOpenIt}
           />
           <TouchableOpacity onPress={showTabsScreen}>
             <Ionicons name="copy-outline" size={20} color="#fff" />

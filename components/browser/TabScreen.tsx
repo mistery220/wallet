@@ -1,10 +1,10 @@
+import { INJECTED_ETH_SCRIPT } from "@/constants/scripts/evm";
+import useInjectedScriptHandler from "@/hooks/browser/useInjectedScriptHandler";
 import { useTabsStore } from "@/store/browser/tabs";
 import { TabData } from "@/types/browser/tabs";
-import { Currency } from "lucide-react-native";
-import { useRef, useState } from "react";
+import { getFormattedUrl } from "@/utils/browser/url";
+import { useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
   Keyboard,
   StyleSheet,
   Text,
@@ -14,56 +14,53 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 
-const TabScreen = ({ showTabsScreen }: { showTabsScreen: () => void }) => {
-  const { tabsData, currTab, setCurrTab } = useTabsStore();
-  const [isLoading, setIsLoading] = useState(false);
-  const [inputUrl, setInputUrl] = useState<string>(currTab?.url || "");
-  const webViewRef = useRef(null);
+const TabScreen = ({
+  showTabsScreen,
+  currTab,
+}: {
+  showTabsScreen: () => void;
+  currTab: TabData;
+}) => {
+  const { webViewRef, handleWebViewMessage } = useInjectedScriptHandler();
+  const tabsData = useTabsStore((state) => state.tabsData);
+  const setCurrTab = useTabsStore((state) => state.setCurrTab);
+  const [refreshing, setRefreshing] = useState(false);
 
-  console.log({ currTab });
+  const onRefresh = () => {
+    setRefreshing(true);
+    webViewRef.current?.reload();
+  };
+  const [inputUrl, setInputUrl] = useState<string>(currTab?.url || "");
 
   const handleUrlSubmit = () => {
-    const currentTab = currTab as TabData;
-    const currUrl = inputUrl.trim();
-    let formattedUrl = currUrl.trim();
-    if (
-      !formattedUrl.startsWith("http://") &&
-      !formattedUrl.startsWith("https://")
-    ) {
-      formattedUrl =
-        "https://www.google.com/search?q=" + encodeURIComponent(formattedUrl);
-    }
+    const currentTab = currTab;
+    const formattedUrl = getFormattedUrl(inputUrl);
     currentTab.url = formattedUrl;
     setCurrTab(currentTab);
     // Hide keyboard after submission
     Keyboard.dismiss();
+    setRefreshing(true);
   };
 
   const handleLoadStart = (e: any) => {
-    if (currTab) {
-      setCurrTab({ ...currTab, title: e.nativeEvent.title });
-      setIsLoading(true);
-    }
+    setCurrTab({ ...currTab, title: e.nativeEvent.title });
   };
 
   const handleLoadEnd = (event: any) => {
-    setIsLoading(false);
-    console.log({ event });
-    // Update tab title and URL based on loaded page
-    // if (event.nativeEvent.title) {
-    //   const updatedTab = {
-    //     ...currentTab,
-    //     title: event.nativeEvent.title,
-    //     url: event.nativeEvent.url,
-    //   };
-    //   setCurrentTab(updatedTab);
-    //   // setCurrentUrl(event.nativeEvent.url);
-    // }
+    setCurrTab({
+      ...currTab,
+      url: event.nativeEvent.url,
+    });
+    setInputUrl(event.nativeEvent.url);
+    setRefreshing(false);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.addressBarContainer}>
+        <TouchableOpacity style={styles.avatar}>
+          <Text style={{ color: "#fff" }}>A1</Text>
+        </TouchableOpacity>
         <TextInput
           style={styles.addressBar}
           value={inputUrl}
@@ -75,42 +72,35 @@ const TabScreen = ({ showTabsScreen }: { showTabsScreen: () => void }) => {
           autoCorrect={false}
           keyboardType="url"
           returnKeyType="go"
-          placeholder="Enter URL"
+          placeholder="Enter URL or search"
           placeholderTextColor="#999"
           selectTextOnFocus
         />
         <TouchableOpacity style={styles.navButton} onPress={showTabsScreen}>
-          <Text style={styles.navButtonText}>
-            {Object.values(tabsData).length}
-          </Text>
+          <View style={styles.tabCounter}>
+            <Text style={styles.tabCounterText}>
+              {Object.values(tabsData).length}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
-      {/* WebView */}
-      {currTab?.url && (
-        <WebView
-          ref={webViewRef}
-          source={{ uri: currTab.url }}
-          style={styles.webview}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          onLoadStart={handleLoadStart}
-          onLoadEnd={handleLoadEnd}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0066ff" />
-            </View>
-          )}
-        />
-      )}
-
-      {/* Loading Indicator overlay */}
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#0066ff" />
-        </View>
-      )}
+      <WebView
+        ref={webViewRef}
+        source={{ uri: currTab.url }}
+        style={styles.webview}
+        javaScriptEnabled
+        domStorageEnabled
+        startInLoadingState
+        onLoadStart={handleLoadStart}
+        onLoadEnd={handleLoadEnd}
+        originWhitelist={["*"]}
+        injectedJavaScript={INJECTED_ETH_SCRIPT}
+        onMessage={handleWebViewMessage}
+        pullToRefreshEnabled={true}
+        forceDarkOn={true}
+        overScrollMode="always"
+      />
     </View>
   );
 };
@@ -120,63 +110,48 @@ export default TabScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#121212",
   },
   addressBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    backgroundColor: "#121212",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  avatar: {
+    backgroundColor: "#333",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   addressBar: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
+    backgroundColor: "#1E1E1E",
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 10,
     fontSize: 16,
-    color: "#333",
-  },
-  goButton: {
-    marginLeft: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    backgroundColor: "#007bff",
-    borderRadius: 20,
-  },
-  goButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   navButton: {
-    padding: 8,
-  },
-  navButtonText: {
-    fontSize: 18,
-    color: "#333",
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    backgroundColor: "#222",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    padding: 4,
   },
   tabCounter: {
+    backgroundColor: "#1E1E1E",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tabCounterText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
-  },
-  siteDetails: {
-    padding: 10,
-    backgroundColor: "#222",
-  },
-  siteTitle: {
-    color: "#fff",
-    fontSize: 20,
   },
   webview: {
     flex: 1,
@@ -185,6 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#121212",
   },
   loadingOverlay: {
     position: "absolute",
@@ -192,8 +168,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    backgroundColor: "rgba(18, 18, 18, 0.7)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
+  },
+  emptyStateText: {
+    color: "#9a9a9a",
+    fontSize: 16,
+    marginTop: 16,
   },
 });

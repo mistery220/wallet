@@ -6,14 +6,16 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function Browser() {
-  const { currTab } = useTabsStore();
+  const currTab = useTabsStore((state) => state.currTab);
+
   function showTabsScreen() {
     router.push("/(app)/browser/tabs");
   }
+
   return (
     <View style={styles.container}>
       {currTab ? (
-        <TabScreen showTabsScreen={showTabsScreen} />
+        <TabScreen showTabsScreen={showTabsScreen} currTab={currTab} />
       ) : (
         <BrowserLanding showTabsScreen={showTabsScreen} />
       )}

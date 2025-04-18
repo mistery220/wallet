@@ -4,7 +4,8 @@ export type TabsStore = {
   tabsData: Record<string, TabData>;
   currTab?: TabData;
   setCurrTab: (currTab: TabData) => void;
-  addNewTabAsCurr: () => string;
+  removeCurrTab: () => void;
+  addNewTabAsCurr: (url?: string) => string;
   updateTab: (tab: TabData) => void;
   deleteTab: (tabId: string) => void;
 };

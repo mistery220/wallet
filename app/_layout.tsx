@@ -1,28 +1,22 @@
-import "react-native-get-random-values";
-import "../polyfills";
-import "react-native-reanimated";
 import "@walletconnect/react-native-compat";
+import "react-native-get-random-values";
+import "react-native-reanimated";
+import "../polyfills";
 
 import WalletKitClient from "@/clients/walletKit/WalletKit";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import EncryptedStore from "@/encryption/EncryptedStore";
 import { usePassStore } from "@/store/auth/password";
 import { useSignatureActionStore } from "@/store/signatures/sign";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useRef } from "react";
 import { AppState, AppStateStatus } from "react-native";
-import EncryptedStore from "@/encryption/EncryptedStore";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const { addSignData } = useSignatureActionStore();
 
   const [loaded] = useFonts({
@@ -65,7 +59,7 @@ export default function RootLayout() {
 
   if (!loaded) return null;
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={DarkTheme}>
       <Slot />
     </ThemeProvider>
   );

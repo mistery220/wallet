@@ -4,16 +4,13 @@ import { router } from "expo-router";
 import React from "react";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import Tab from "./Tab";
-import { routeToScreen } from "expo-router/build/useScreens";
 
 const NavigationTabs = () => {
-  const { tabsData, addNewTabAsCurr } = useTabsStore();
+  const { tabsData, addNewTabAsCurr, removeCurrTab } = useTabsStore();
   const tabs = Object.values(tabsData);
-
   function routeToBrowserScreen() {
     router.push("/(app)/(tabs)/browser");
   }
-
   return (
     <View style={{ flex: 1 }}>
       <FlatList
@@ -21,7 +18,12 @@ const NavigationTabs = () => {
         numColumns={2}
         contentContainerStyle={styles.tabsContainer}
         renderItem={({ item }) => (
-          <Tab item={item} routeToBrowserScreen={routeToBrowserScreen} />
+          <Tab
+            item={item}
+            routeToBrowserScreen={() => {
+              routeToBrowserScreen();
+            }}
+          />
         )}
         keyExtractor={(item) => item.id}
       />
@@ -35,15 +37,19 @@ const NavigationTabs = () => {
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => {
-            const id = addNewTabAsCurr();
-            console.log({ id });
+            addNewTabAsCurr();
             routeToBrowserScreen();
           }}
         >
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={routeToBrowserScreen}>
+        <TouchableOpacity
+          onPress={() => {
+            removeCurrTab();
+            routeToBrowserScreen();
+          }}
+        >
           <MaterialIcons name="close" size={24} color="#fff" />
         </TouchableOpacity>
       </View>

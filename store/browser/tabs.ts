@@ -17,25 +17,38 @@ export const useTabsStore = create<TabsStore>()(
         ["2"]: { id: "2", title: "Odos", url: "https://odos.xyz/" },
       },
       currTab: undefined,
-      addNewTabAsCurr: () => {
+      addNewTabAsCurr: (url: string = "") => {
         const id = new Date().getTime().toString();
-        set((state) => {
-          const newTab: TabData = {
-            id,
-            title: "",
-            url: "",
-          };
-          state.currTab = newTab;
-          state.tabsData[id] = newTab;
-          return state;
-        });
+        const newTab: TabData = {
+          id,
+          title: "",
+          url,
+        };
+
+        set((state) => ({
+          currTab: newTab,
+          tabsData: {
+            ...state.tabsData,
+            [id]: newTab,
+          },
+        }));
+
         return id;
       },
-
       // Set the current tab
       setCurrTab: (currTab: TabData) =>
+        set((state) => {
+          return {
+            currTab,
+            tabsData: {
+              ...state.tabsData,
+              [currTab.id]: currTab,
+            },
+          };
+        }),
+      removeCurrTab: () =>
         set(() => ({
-          currTab,
+          currTab: undefined,
         })),
 
       // Update an existing tab
