@@ -6,7 +6,7 @@ export const INJECTED_ETH_SCRIPT = `
   const resolvers = {};
 
   const provider = {
-    isMetaMask: false,
+    isMetaMask: true,
     isMyWallet: true,
     isConnected: () => true,
     _requestResolvers: resolvers,

@@ -3,11 +3,13 @@ import { TabData } from "@/types/browser/tabs";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { zustandAsyncStorage } from "@/utils/store/save-data/async";
 import { TabsStore } from "@/types/store/browser/tabs";
+import { ChainIds } from "@/enums/network/chains";
 
 // Store for managing browser tabs with persistence
 export const useTabsStore = create<TabsStore>()(
   persist(
     (set) => ({
+      activeChainId: ChainIds.ArbitrumOne,
       tabsData: {
         ["1"]: {
           id: "1",
