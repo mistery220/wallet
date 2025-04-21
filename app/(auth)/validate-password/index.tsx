@@ -1,8 +1,10 @@
+import { PERSIST_ROUTE_KEY } from "@/constants/store/keys";
 import EncryptedStore from "@/encryption/EncryptedStore";
 import { retrieveSecureData } from "@/encryption/storage/retrieve";
 import { usePassStore } from "@/store/auth/password";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
+import { RelativePathString, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -73,10 +75,10 @@ const PasswordValidationScreen = () => {
     }
     if (storedPassword) {
       EncryptedStore.setPhrase(storedPassword as string);
+      const lastRoute = await retrieveSecureData(PERSIST_ROUTE_KEY);
+      router.push((lastRoute as RelativePathString) || "/");
       setIsAuthenticated(true);
     }
-    // @TODO update this to navigate as per the requirement
-    // router.push("/(app)/(tabs)");
   }
 
   const validatePassword = async (): Promise<void> => {

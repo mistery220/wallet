@@ -1,6 +1,6 @@
 import { useCurrentStore } from "@/store/current";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Platform,
@@ -15,9 +15,8 @@ import {
 } from "react-native";
 
 const AccountAddressesScreen = () => {
-  const { accountId } = useLocalSearchParams();
-  const { accounts } = useCurrentStore();
-  const [account] = useState(accounts[accountId as string]);
+  const { accounts, activeId } = useCurrentStore();
+  const [account] = useState(accounts[activeId]);
 
   const handleBack = () => {
     router.back();

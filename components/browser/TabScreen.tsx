@@ -1,10 +1,14 @@
 import { INJECTED_ETH_SCRIPT } from "@/constants/scripts/evm";
 import useInjectedScriptHandler from "@/hooks/browser/useInjectedScriptHandler";
 import { useTabsStore } from "@/store/browser/tabs";
+import { useCurrentStore } from "@/store/current";
 import { TabData } from "@/types/browser/tabs";
 import { getFormattedUrl } from "@/utils/browser/url";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Keyboard,
   StyleSheet,
   Text,
@@ -23,14 +27,15 @@ const TabScreen = ({
 }) => {
   const { webViewRef, handleWebViewMessage } = useInjectedScriptHandler();
   const tabsData = useTabsStore((state) => state.tabsData);
+  const { accounts, activeId } = useCurrentStore();
   const setCurrTab = useTabsStore((state) => state.setCurrTab);
   const [refreshing, setRefreshing] = useState(false);
+  const [inputUrl, setInputUrl] = useState<string>(currTab?.url || "");
 
   const onRefresh = () => {
     setRefreshing(true);
     webViewRef.current?.reload();
   };
-  const [inputUrl, setInputUrl] = useState<string>(currTab?.url || "");
 
   const handleUrlSubmit = () => {
     const currentTab = currTab;
@@ -44,6 +49,7 @@ const TabScreen = ({
 
   const handleLoadStart = (e: any) => {
     setCurrTab({ ...currTab, title: e.nativeEvent.title });
+    setRefreshing(true);
   };
 
   const handleLoadEnd = (event: any) => {
@@ -58,8 +64,13 @@ const TabScreen = ({
   return (
     <View style={styles.container}>
       <View style={styles.addressBarContainer}>
-        <TouchableOpacity style={styles.avatar}>
-          <Text style={{ color: "#fff" }}>A1</Text>
+        <TouchableOpacity
+          style={styles.avatar}
+          onPress={() => {
+            router.push("/(app)/accounts/addresses");
+          }}
+        >
+          <Text style={{ color: "#fff" }}>{accounts[activeId].name[0]}</Text>
         </TouchableOpacity>
         <TextInput
           style={styles.addressBar}
@@ -76,7 +87,14 @@ const TabScreen = ({
           placeholderTextColor="#999"
           selectTextOnFocus
         />
-        <TouchableOpacity style={styles.navButton} onPress={showTabsScreen}>
+        <TouchableOpacity style={styles.iconButton} onPress={onRefresh}>
+          {refreshing ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Ionicons name="refresh-outline" size={20} color="#fff" />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={showTabsScreen}>
           <View style={styles.tabCounter}>
             <Text style={styles.tabCounterText}>
               {Object.values(tabsData).length}
@@ -100,7 +118,18 @@ const TabScreen = ({
         pullToRefreshEnabled={true}
         forceDarkOn={true}
         overScrollMode="always"
+        renderLoading={() => (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#7B61FF" />
+          </View>
+        )}
       />
+
+      {refreshing && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#7B61FF" />
+        </View>
+      )}
     </View>
   );
 };
@@ -136,6 +165,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     fontSize: 16,
     color: "#fff",
+  },
+  iconButton: {
+    padding: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   navButton: {
     padding: 4,
