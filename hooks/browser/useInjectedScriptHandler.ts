@@ -1,3 +1,4 @@
+import EncryptedStore from "@/encryption/EncryptedStore";
 import { ChainIds } from "@/enums/network/chains";
 import { Networks } from "@/enums/network/ecosystem";
 import { useTabsStore } from "@/store/browser/tabs";
@@ -5,9 +6,11 @@ import { useChainsStore } from "@/store/chains";
 import { useCurrentStore } from "@/store/current";
 import { HexString } from "@/types/address/evm";
 import { Account } from "@/types/wallet/account";
+import { viemChainsById } from "@/utils/client/evm/chains";
 import { useRef } from "react";
 import type { WebView as WebViewType } from "react-native-webview";
-import { createPublicClient, fallback, http } from "viem";
+import { createPublicClient, createWalletClient, fallback, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 export default function useInjectedScriptHandler() {
   const webViewRef = useRef<WebViewType>(null);
@@ -65,7 +68,6 @@ if (window.wallet && window.wallet.ethereum && window.wallet.ethereum._resolveRe
     try {
       const message = JSON.parse(event.nativeEvent.data);
       const { method, requestId, type, params } = message;
-      console.log({ method, params });
       if (type === "ETHEREUM_REQUEST") {
         switch (method) {
           case "eth_requestAccounts":
@@ -87,8 +89,69 @@ if (window.wallet && window.wallet.ethereum && window.wallet.ethereum._resolveRe
             );
             break;
 
-          case "eth_sendTransaction":
+          case "eth_signTypedData_v4": {
+            try {
+              const [address, typedData] = params;
+              console.log(address);
+              const decodedKey = await EncryptedStore.decryptAndRetrieve(
+                address
+              );
+              if (!decodedKey) throw new Error("Private key not found");
+
+              const accountFromPrivKey = privateKeyToAccount(
+                decodedKey as HexString
+              );
+              const walletClient = createWalletClient({
+                transport: http(),
+                chain: viemChainsById[activeChainId],
+              });
+
+              const signature = await walletClient.signTypedData({
+                account: accountFromPrivKey,
+                domain: typedData.domain,
+                types: typedData.types,
+                primaryType: typedData.primaryType,
+                message: typedData.message,
+              });
+
+              sendResultToWeb(signature, requestId);
+            } catch (e) {
+              console.error("eth_signTypedData_v4 error:", e);
+              sendResultToWeb(null, requestId);
+            }
             break;
+          }
+
+          case "eth_sendTransaction": {
+            const { to, from, gas, value, data, gasPrice } = params[0];
+            try {
+              const address = accounts[activeId].address[Networks.EVM];
+              const decodedKey = await EncryptedStore.decryptAndRetrieve(
+                address
+              );
+              if (decodedKey) {
+                const accountFromPrivKey = privateKeyToAccount(
+                  decodedKey as HexString
+                );
+                const walletClient = createWalletClient({
+                  transport: http(),
+                  chain: viemChainsById[42161],
+                });
+                const hash = await walletClient.sendTransaction({
+                  account: accountFromPrivKey,
+                  data: data as HexString,
+                  to: to as HexString,
+                  value: BigInt(value),
+                  gas: BigInt(gas),
+                  gasPrice: BigInt(gasPrice),
+                });
+                sendResultToWeb(hash, requestId);
+              }
+            } catch (e) {
+              console.log({ e });
+            }
+            break;
+          }
           case "eth_blockNumber": {
             const urls = chains[activeChainId].rpcUrls;
             const publicClient = createPublicClient({

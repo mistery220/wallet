@@ -12,7 +12,7 @@ import { mnemonicToAccount } from "viem/accounts";
 import { usePushNotifications } from "../notification/usePushNotification";
 
 export default function useKeys() {
-  const { activeId, addAndSetNewAccount, setUserId } = useCurrentStore();
+  const { activeId, addAndSetNewAccount, setUserId, accounts } = useCurrentStore();
   const { expoPushToken } = usePushNotifications();
 
   async function getAccountsAndStoreKey(
@@ -52,7 +52,7 @@ export default function useKeys() {
     }
     const acc: Account = {
       address: addresses,
-      name: "Account 1",
+      name: `Account ${Object.keys(accounts).length}`,
       id: accountId,
       walletId,
       isPhrase: true,

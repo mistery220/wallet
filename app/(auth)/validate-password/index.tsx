@@ -23,7 +23,9 @@ import {
 } from "react-native";
 
 const PasswordValidationScreen = () => {
-  const { setIsAuthenticated, isAuthenticated } = usePassStore();
+  const { setIsAuthenticated } = usePassStore();
+
+  const [isFirstLaunch, setIsFirstLaunch] = useState(true);
   const [password, setPassword] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [supportsBiometrics, setSupportsBiometrics] = useState<boolean>(false);
@@ -75,8 +77,11 @@ const PasswordValidationScreen = () => {
     }
     if (storedPassword) {
       EncryptedStore.setPhrase(storedPassword as string);
-      const lastRoute = await retrieveSecureData(PERSIST_ROUTE_KEY);
+      const lastRoute = isFirstLaunch
+        ? "/"
+        : await retrieveSecureData(PERSIST_ROUTE_KEY);
       router.push((lastRoute as RelativePathString) || "/");
+      setIsFirstLaunch(false);
       setIsAuthenticated(true);
     }
   }

@@ -5,7 +5,6 @@ import usePublicClient from "@/hooks/clients/usePublicClient";
 import { useCurrentStore } from "@/store/current";
 import { HexString } from "@/types/address/evm";
 import { viemChainsById } from "@/utils/client/evm/chains";
-import { joinStrings } from "@/utils/string/join";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 

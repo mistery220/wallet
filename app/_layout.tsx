@@ -11,16 +11,15 @@ import { usePassStore } from "@/store/auth/password";
 import { useSignatureActionStore } from "@/store/signatures/sign";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot, useNavigation, useNavigationContainerRef } from "expo-router";
+import { Slot, useNavigationContainerRef } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AppState, AppStateStatus } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { addSignData } = useSignatureActionStore();
-  const navigation = useNavigation();
 
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),

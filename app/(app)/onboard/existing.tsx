@@ -3,7 +3,7 @@ import React from "react";
 import { StyleSheet } from "react-native";
 
 const Existing = () => {
-  return <ExistingWallet  />;
+  return <ExistingWallet />;
 };
 
 export default Existing;

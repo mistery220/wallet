@@ -102,34 +102,29 @@ const TabScreen = ({
           </View>
         </TouchableOpacity>
       </View>
-
-      <WebView
-        ref={webViewRef}
-        source={{ uri: currTab.url }}
-        style={styles.webview}
-        javaScriptEnabled
-        domStorageEnabled
-        startInLoadingState
-        onLoadStart={handleLoadStart}
-        onLoadEnd={handleLoadEnd}
-        originWhitelist={["*"]}
-        injectedJavaScript={INJECTED_ETH_SCRIPT}
-        onMessage={handleWebViewMessage}
-        pullToRefreshEnabled={true}
-        forceDarkOn={true}
-        overScrollMode="always"
-        renderLoading={() => (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#7B61FF" />
-          </View>
-        )}
-      />
-
-      {refreshing && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#7B61FF" />
-        </View>
-      )}
+      <View style={styles.webview}>
+        <WebView
+          ref={webViewRef}
+          source={{ uri: currTab.url }}
+          style={styles.webview}
+          javaScriptEnabled
+          domStorageEnabled
+          startInLoadingState
+          onLoadStart={handleLoadStart}
+          onLoadEnd={handleLoadEnd}
+          originWhitelist={["*"]}
+          injectedJavaScript={INJECTED_ETH_SCRIPT}
+          onMessage={handleWebViewMessage}
+          pullToRefreshEnabled={true}
+          forceDarkOn={true}
+          overScrollMode="always"
+          // renderLoading={() => (
+          //   <View style={styles.loadingContainer}>
+          //     <ActivityIndicator size="large" color="#7B61FF" />
+          //   </View>
+          // )}
+        />
+      </View>
     </View>
   );
 };

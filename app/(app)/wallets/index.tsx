@@ -21,8 +21,7 @@ const ManageAccountsScreen = () => {
   };
 
   const handleAddWallet = () => {
-    // @TODO add wallet addition handling
-    // router.push("/wallets/add");
+    router.push("/onboard");
   };
 
   const handleAccountOptions = (accountId: string) => {
